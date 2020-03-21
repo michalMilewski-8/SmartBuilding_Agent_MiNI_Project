@@ -35,3 +35,10 @@
 
 ## Przykładowe zadanie
 ![1](zadanie_termo.png)
+
+## Bibliografia
+  - https://spade-mas.readthedocs.io/en/latest/
+  - https://www.researchgate.net/publication/3857054_A_multi-agent_system_for_controlling_intelligent_buildings
+  - https://www.researchgate.net/publication/228359500_A_Semiotic_Multi-Agent_System_for_Intelligent_Building_Control
+  - http://people.cs.ksu.edu/~danielwang/BAS/05342106.pdf
+  - https://www.researchgate.net/profile/Zhu_Wang4/publication/258114088_Adaptive_Negotiation_Agent_for_Facilitating_Bi-Directional_Energy_Trading_Between_Smart_Building_and_Utility_Grid/links/0deec52708f09ad63d000000.pdf
