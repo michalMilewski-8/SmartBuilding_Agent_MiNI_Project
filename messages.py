@@ -18,6 +18,11 @@ room_data_exchange_request = {
     "temperature": 20,
 }
 
+# wiadomość od pokoju do pokoju (uznalem ze dodam zeby bylo wiadomo na co to jest odpowiedz)
+room_data_exchange_response = {
+    "temperature": 20,
+}
+
 # wiadomość od pokoju do pokoju
 room_data_response = {
     "temperature": 20,
@@ -54,3 +59,5 @@ room_power_request = {}
 room_power_response = {
     "power": 1234
 }
+
+#nie wiem czy nie brakuje od pokoju do centralnego
