@@ -8,9 +8,22 @@ import json
 
 class PersonalAgent(Agent):
     @staticmethod
-    def prepare_meet_request_request(self, date, temperature, receivers):
+    def prepare_meet_request(self, date, temperature, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'request')
-        msg.set_metadata('type', 'meet_request')
+        msg.set_metadata('type', 'meet')
         msg.body = json.dumps({'date': date, 'temperature': temperature})
         return msg
+    
+    class SendReqBehav(CyclicBehaviour):
+	async def run(self):
+	    msg = PersonalAgent.prepare_meet_request(self,'jakas data',20,'central_agent')
+	    await self.send(msg)
+	    template = Template()
+	    template.set_metadata('performative','inform')
+	    template.set_metadata('type','meet')
+	    #tu czekanie na template
+
+    async def setup(self)
+	sending = self.SendReqBehav()
+	self.addbehaviour(sending)
