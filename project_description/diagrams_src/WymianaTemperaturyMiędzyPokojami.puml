@@ -1,0 +1,7 @@
+@startuml
+actor AgentPokojuSpotkań
+actor AgentPokojuOsobistego
+
+AgentPokojuSpotkań -> AgentPokojuOsobistego : room_data_exchange_request
+AgentPokojuOsobistego -> AgentPokojuSpotkań : room_data_response
+@enduml

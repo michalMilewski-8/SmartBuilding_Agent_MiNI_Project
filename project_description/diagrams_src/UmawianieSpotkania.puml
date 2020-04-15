@@ -1,0 +1,9 @@
+@startuml
+actor AgentPersonalny
+actor AgentCentralnyPlanujący
+actor AgentPokojuSpotkań
+
+AgentPersonalny -> AgentCentralnyPlanujący : meet_request
+AgentCentralnyPlanujący -> AgentPokojuSpotkań : new_meeting
+AgentCentralnyPlanujący -> AgentPersonalny : meet_response
+@enduml

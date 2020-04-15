@@ -127,3 +127,46 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - 3 WymianaTemperaturyMiędzyPokojami
  - 1 ZapytanieOTemperaturęNaZewnątrz
  - 2 InformowanieOZużytejEnergii
+
+#### UmawianieSpotkania
+##### Diagram
+![](diagrams_img/UmawianieSpotkania.svg)
+
+##### Przykładowe wiadomości
+```Python
+meet_request = {
+    "date": "23-01-2020 12:23",
+    "temperature": 30
+}
+```
+
+```Python
+new_meeting = {
+    "date": "23-01-2020 12:23",
+    "temperature": 30,
+    "organizer_jid": "aaa@lll"
+}
+```
+
+```Python
+meet_response = {
+    "room_id": 21
+}
+```
+
+#### WymianaTemperaturyMiędzyPokojami
+##### Diagram
+![](diagrams_img/WymianaTemperaturyMiędzyPokojami.svg)
+
+##### Przykładowe wiadomości
+```Python
+room_data_exchange_request = {
+    "temperature": 20,
+}
+```
+
+```Python
+room_data_response = {
+    "temperature": 20,
+}
+```
