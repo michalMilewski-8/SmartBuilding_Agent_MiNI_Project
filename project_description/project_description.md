@@ -50,7 +50,6 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 	  + Cykl życia:
 	    + EGZYSTENCJA = PreferencjePracownika.(UmawianieSpotkań | InformowanieODacieIGodzinie)ω
 	    + UmawianieSpotkań = (UmawianieSpotkania[NegocjacjaTerminuSpotkania])|InformowanieOSpóźnieniu
-	  + Bezpieczeństwo: Tak
 	
 #### Agent pokoju spotkań
 
@@ -59,9 +58,8 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - Protokoły i Aktywności: UmawianieSpotkania, WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie
  - Uprawnienia: Odczyt i modyfikacje kalendarza pokoju. Dostęp do termometru i klimatyzacji.
  - Zadania:
-	  + Cykl życia:
-		EGZYSTENCJA = (UmawianieSpotkania | WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie) ω
-	  + Bezpieczeństwo: Tak
+     + Cykl życia:
+       EGZYSTENCJA = (UmawianieSpotkania | WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie) ω
 
 #### Agent pokoju osobistego
 
@@ -70,9 +68,8 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - Protokoły i Aktywności: WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, PreferencjePracownika, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie
  - Uprawnienia: Odczyt i modyfikacje kalendarza pokoju. Dostęp do termometru i klimatyzacji.
  - Zadania:
-	  + Cykl życia:
-		EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie) ω
-	  + Bezpieczeństwo: Tak
+     + Cykl życia:
+       EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie) ω
 
 #### Agent centralny planujący
 
@@ -81,9 +78,8 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniu, NegocjacjaTerminuSpotkania, InformowanieODacieIGodzinie
  - Uprawnienia: Odczyt i modyfikacje kalendarza.
  - Zadania:
-	  + Cykl życia:
-		EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniu | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie) ω
-	  + Bezpieczeństwo: Tak
+     + Cykl życia:
+       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniu | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie) ω
 
 #### Agent "energetyk"
 
@@ -92,9 +88,8 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - Protokoły i Aktywności: InformowanieOZużytejEnergii
  - Uprawnienia: Brak.
  - Zadania:
-	  + Cykl życia:
-		EGZYSTENCJA = (InformowanieOZużytejEnergii) ω
-	  + Bezpieczeństwo: Tak
+     + Cykl życia:
+       EGZYSTENCJA = (InformowanieOZużytejEnergii) ω
 
 #### Agent "zegarek"
 
@@ -103,9 +98,8 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - Protokoły i Aktywności: InformowanieODacieIGodzinie
  - Uprawnienia: Brak.
  - Zadania:
-	  + Cykl życia:
-		EGZYSTENCJA = (InformowanieODacieIGodzinie)ω
-	  + Bezpieczeństwo: Tak
+     + Cykl życia:
+       EGZYSTENCJA = (InformowanieODacieIGodzinie)ω
 
 #### Agent zewnętrzny
 
@@ -114,9 +108,8 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - Protokoły i Aktywności: ZapytanieOTemperaturęNaZewnątrz
  - Uprawnienia: Brak.
  - Zadania:
-	  + Cykl życia:
-		EGZYSTENCJA = (ZapytanieOTemperaturęNaZewnątrz)ω
-	  + Bezpieczeństwo: Tak
+     + Cykl życia:
+       EGZYSTENCJA = (ZapytanieOTemperaturęNaZewnątrz)ω
 
 ## Protkoły
  - 3 UmawianieSpotkania,
