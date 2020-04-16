@@ -1,4 +1,4 @@
-# Temat projektu - Intelligent office building
+
 
 ## Struktura systemu agentowego:
   - kalendarz centralny - będzie jednocześnie centralnym agentem podejmującym wszelkie decyzje
@@ -26,7 +26,7 @@
     + zachłanny - zawsze bierzemy pokój, który według symulacji będzie miał najbardziej zbliżoną temperaturą w czasie spotkania jak najmniejszym kosztem, spośród wolnych pokojów
     + jeśli nie będzie za dużo danych, może uda się zastosować backtracking
   - zakładamy minimalną oraz maksymalną temperaturę w pomieszczeniach utrzymywaną przez całą dobę żeby nie uległy zniszczeniu rzeczy znajdujące się w biurach. Decyzja jaka temperatura faktycznie będzie utrzymywana podejmowana dynamicznie
-   
+
   ## Bibliografia
   - https://spade-mas.readthedocs.io/en/latest/
   - https://www.researchgate.net/publication/3857054_A_multi-agent_system_for_controlling_intelligent_buildings
@@ -168,5 +168,45 @@ room_data_exchange_request = {
 ```Python
 room_data_response = {
     "temperature": 20,
+}
+```
+
+
+#### InformowanieOSpóźnieniu
+##### Diagram
+![](diagrams_img/InformowanieOSpóźnieniu.svg)
+
+##### Przykładowe wiadomości
+```Python
+room_data_exchange_request = {
+    "arrival_datetime": "16-04-2020 11:00",
+}
+```
+
+```Python
+room_data_response = {
+    "confirmed": true
+}
+```
+
+#### InformowanieODacieIGodzinie
+##### Diagram
+![](diagrams_img/InformowanieODacieIGodzinie.svg)
+
+##### Przykładowe wiadomości
+```Python
+datetime_inform = {
+    "datetime": "16-04-2020 11:15"
+}
+```
+
+#### InformowanieOZużytejEnergii
+##### Diagram
+![](diagrams_img/InformowanieOZużytejEnergii.svg)
+
+##### Przykładowe wiadomości
+```Python
+energy_usage_inform = {
+    "energy_used_since_last_message": 20
 }
 ```
