@@ -2,8 +2,19 @@
 actor AgentPersonalny
 actor AgentCentralnyPlanujący
 actor AgentPokojuSpotkań
+actor AgenciPersonalniUczestnikow
+actor AgenciPokojówSpotkań
 
 AgentPersonalny -> AgentCentralnyPlanujący : meet_request
+alt if needed
+	loop NegocjacjaTerminuSpotkania
+		AgentCentralnyPlanujący -> AgenciPersonalniUczestnikow : messages
+		AgenciPersonalniUczestnikow -> AgentCentralnyPlanujący : messages
+		AgentCentralnyPlanujący -> AgenciPokojówSpotkań : messages
+		AgenciPokojówSpotkań -> AgentCentralnyPlanujący : messages
+	end
+end
 AgentCentralnyPlanujący -> AgentPokojuSpotkań : new_meeting
+AgentCentralnyPlanujący -> AgenciPokojówSpotkań : new_meeting
 AgentCentralnyPlanujący -> AgentPersonalny : meet_response
 @enduml
