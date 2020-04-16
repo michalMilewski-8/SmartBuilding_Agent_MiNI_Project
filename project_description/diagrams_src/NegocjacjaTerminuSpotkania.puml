@@ -1,0 +1,17 @@
+@startuml
+actor AgentCentralnyPlanujący
+actor AgentPersonalny
+actor AgentPokojuSpotkań
+
+loop dopóki jest co negocjować lub stanęło na starym czasie
+	AgentCentralnyPlanujący->AgentPersonalny: move_meeting_propose
+
+	alt akceptacja	
+		AgentPersonalny -> AgentCentralnyPlanujący: accept_proposal
+	else odrzucenie
+		AgentPersonalny -> AgentCentralnyPlanujący: refuse_proposal
+	end
+end
+
+AgentCentralnyPlanujący -> AgentPokojuSpotkań: move_meeting_inform
+@enduml

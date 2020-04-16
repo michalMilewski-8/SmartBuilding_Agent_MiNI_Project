@@ -203,3 +203,61 @@ energy_usage_inform = {
     "energy_used_since_last_message": 20
 }
 ```
+
+#### PreferencjePracownika
+##### Diagram
+![](diagrams_img/PreferencjePracownika.svg)
+
+##### Przykładowe wiadomości
+```Python
+preferences_inform = {
+    "optimal_temperature": 20
+}
+```
+
+#### ZapytanieOTemperaturęNaZewnątrz
+##### Diagram
+![](diagrams_img/ZapytanieOTemperaturęNaZewnątrz.svg)
+
+##### Przykładowe wiadomości
+```Python
+outdoor_temperature_request = {}
+```
+
+```Python
+outdoor_temperature_inform = {
+	"outdoor_temperature": 14
+}
+```
+
+#### NegocjacjaTerminuSpotkania
+##### Diagram
+![](diagrams_img/NegocjacjaTerminuSpotkania.svg)
+
+##### Przykładowe wiadomości
+```Python
+move_meeting_propose = {
+	"datetime": "16-04-2020 11:15"
+}
+```
+
+```Python
+accept_proposal = {
+	"datetime": "16-04-2020 11:15"
+}
+```
+
+```Python
+refuse_proposal = {
+	"datetime": "16-04-2020 11:15"
+}
+```
+
+```Python
+move_meeting_inform = {
+	"old_datetime": "16-04-2020 11:00"
+	"datetime": "16-04-2020 11:15"
+}
+```
+
+
