@@ -13,6 +13,6 @@ alt if needed
 		AgenciPokojówSpotkań -> AgentCentralnyPlanujący : messages
 	end
 end
-AgentCentralnyPlanujący -> AgentPersonalny : late_response
+AgentCentralnyPlanujący -> AgentPersonalny : late_confirm
 
 @enduml

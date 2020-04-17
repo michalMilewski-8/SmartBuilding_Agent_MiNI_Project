@@ -112,14 +112,14 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
        EGZYSTENCJA = (ZapytanieOTemperaturęNaZewnątrz)ω
 
 ## Protkoły
- - 3 UmawianieSpotkania,
- - 2 InformowanieOSpóźnieniu, 
- - 1 NegocjacjaTerminuSpotkania, 
- - 1 PreferencjePracownika, 
- - 2 InformowanieODacieIGodzinie
- - 3 WymianaTemperaturyMiędzyPokojami
- - 1 ZapytanieOTemperaturęNaZewnątrz
- - 2 InformowanieOZużytejEnergii
+ - UmawianieSpotkania,
+ - WymianaTemperaturyMiędzyPokojami,
+ - InformowanieOSpóźnieniu, 
+ - InformowanieODacieIGodzinie,
+ - InformowanieOZużytejEnergii, 
+ - PreferencjePracownika, 
+ - ZapytanieOTemperaturęNaZewnątrz,
+ - NegocjacjaTerminuSpotkania
 
 #### UmawianieSpotkania
 ##### Diagram
@@ -135,7 +135,7 @@ meet_request = {
 ```
 
 ```Python
-new_meeting = {
+new_meeting_inform = {
     "date": "23-01-2020 12:23",
     "temperature": 30,
     "organizer_jid": "aaa@lll"
@@ -143,7 +143,7 @@ new_meeting = {
 ```
 
 ```Python
-meet_response = {
+meet_inform = {
     "room_id": 21
 }
 ```
@@ -160,7 +160,7 @@ room_data_exchange_request = {
 ```
 
 ```Python
-room_data_response = {
+room_data_inform = {
     "temperature": 20,
 }
 ```
@@ -172,13 +172,13 @@ room_data_response = {
 
 ##### Przykładowe wiadomości
 ```Python
-room_data_exchange_request = {
+late_inform = {
     "arrival_datetime": "16-04-2020 11:00",
 }
 ```
 
 ```Python
-room_data_response = {
+late_confirm = {
     "confirmed": true
 }
 ```
