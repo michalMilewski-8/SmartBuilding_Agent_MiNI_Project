@@ -130,6 +130,7 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 meet_request = {
     "date": "23-01-2020 12:23",
     "temperature": 30
+    "participants": ["aaa@lll", "bbb@lll"]
 }
 ```
 

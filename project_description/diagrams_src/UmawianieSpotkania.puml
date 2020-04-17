@@ -15,6 +15,6 @@ alt if needed
 	end
 end
 AgentCentralnyPlanujący -> AgentPokojuSpotkań : new_meeting
-AgentCentralnyPlanujący -> AgenciPokojówSpotkań : new_meeting
+AgentCentralnyPlanujący -> AgenciPersonalniUczestnikow : new_meeting
 AgentCentralnyPlanujący -> AgentPersonalny : meet_response
 @enduml
