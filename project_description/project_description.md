@@ -261,4 +261,6 @@ move_meeting_inform = {
 }
 ```
 
+## Plan działania
 
+ - Implementacja dotychczas opracowanych założeń.
