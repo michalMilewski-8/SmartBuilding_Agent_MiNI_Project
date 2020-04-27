@@ -235,7 +235,7 @@ outdoor_temperature_request = {}
 
 ```Python
 outdoor_temperature_inform = {
-	"outdoor_temperature": 14
+    "outdoor_temperature": 14
 }
 ```
 
