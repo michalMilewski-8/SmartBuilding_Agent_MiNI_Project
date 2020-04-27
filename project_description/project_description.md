@@ -149,7 +149,7 @@ new_meeting_inform = {
 
 ```Python
 meet_inform = {
-	"meeting_guid": "AWDH5435-89oij-JIKI",
+    "meeting_guid": "AWDH5435-89oij-JIKI",
     "start_date": "23-01-2020 12:23",
     "end_date":"23-01-2020 14:23",
     "room_id": 21
@@ -246,7 +246,7 @@ outdoor_temperature_inform = {
 ##### Przykładowe wiadomości
 ```Python
 move_meeting_propose = {
-	"meeting_guid": "AWDH5435-89oij-JIKI",
+    "meeting_guid": "AWDH5435-89oij-JIKI",
     "start_date": "23-01-2020 12:23",
     "end_date":"23-01-2020 14:23"
 }
@@ -254,19 +254,19 @@ move_meeting_propose = {
 
 ```Python
 accept_proposal = {
-	"meeting_guid": "AWDH5435-89oij-JIKI"
+    "meeting_guid": "AWDH5435-89oij-JIKI"
 }
 ```
 
 ```Python
 refuse_proposal = {
-	"meeting_guid": "AWDH5435-89oij-JIKI"
+    "meeting_guid": "AWDH5435-89oij-JIKI"
 }
 ```
 
 ```Python
 move_meeting_inform = {
- 	"meeting_guid": "AWDH5435-89oij-JIKI",
+    "meeting_guid": "AWDH5435-89oij-JIKI",
     "new_start_date": "23-01-2020 12:23",
     "new_end_date":"23-01-2020 14:23"
 }
