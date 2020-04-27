@@ -128,7 +128,9 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 ##### Przykładowe wiadomości
 ```Python
 meet_request = {
-    "date": "23-01-2020 12:23",
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
     "temperature": 30
     "participants": ["aaa@lll", "bbb@lll"]
 }
@@ -136,14 +138,20 @@ meet_request = {
 
 ```Python
 new_meeting_inform = {
-    "date": "23-01-2020 12:23",
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
     "temperature": 30,
+    "room_id": 21,
     "organizer_jid": "aaa@lll"
 }
 ```
 
 ```Python
 meet_inform = {
+	"meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
     "room_id": 21
 }
 ```
@@ -238,26 +246,29 @@ outdoor_temperature_inform = {
 ##### Przykładowe wiadomości
 ```Python
 move_meeting_propose = {
-	"datetime": "16-04-2020 11:15"
+	"meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23"
 }
 ```
 
 ```Python
 accept_proposal = {
-	"datetime": "16-04-2020 11:15"
+	"meeting_guid": "AWDH5435-89oij-JIKI"
 }
 ```
 
 ```Python
 refuse_proposal = {
-	"datetime": "16-04-2020 11:15"
+	"meeting_guid": "AWDH5435-89oij-JIKI"
 }
 ```
 
 ```Python
 move_meeting_inform = {
-	"old_datetime": "16-04-2020 11:00"
-	"datetime": "16-04-2020 11:15"
+ 	"meeting_guid": "AWDH5435-89oij-JIKI",
+    "new_start_date": "23-01-2020 12:23",
+    "new_end_date":"23-01-2020 14:23"
 }
 ```
 
