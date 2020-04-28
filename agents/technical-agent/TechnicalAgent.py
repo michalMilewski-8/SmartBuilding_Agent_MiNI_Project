@@ -2,7 +2,6 @@ from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour, PeriodicBehaviour
 from spade.message import Message
 from spade.template import Template
-from spade import quit_spade
 import json
 
 
@@ -32,27 +31,23 @@ class TechnicalAgent(Agent):
     def __init__(self, jid, password):
         super().__init__(jid, password)
         self.power = 0
-        self.time_speed = 1
-        self.known_rooms = []
 
     def setup(self):
-        room_response_template = Template()
-        room_response_template.set_metadata('performative', 'inform')
-        room_response_template.set_metadata('type', 'room_power_data')
+        room_inform_template = Template()
+        room_inform_template.set_metadata('performative', 'inform')
+        room_inform_template.set_metadata('type', 'energy_usage_inform')
 
-        room_request_template = Template()
-        room_request_template.set_metadata('performative', 'request')
-        room_request_template.set_metadata('type', 'power_data')
-
-        self.add_behaviour(self.PowerDataExchangeBehaviour(), room_request_template)
-        self.add_behaviour(self.GetRoomPowerBehaviour(60/self.time_speed), room_response_template)
+        self.add_behaviour(self.PowerDataExchangeBehaviour(), room_inform_template)
 
     class PowerDataExchangeBehaviour(CyclicBehaviour):
 
         async def run(self):
             msg = await self.receive()
-            response = self.agent.prepare_power_data_response(self.agent.get_power(), msg.sender)
+            msg_body = json.loads(msg.body);
+            if 'energy_used_since_last_message' in msg_body:
+                self.agent.add_to_power(msg_body['energy_used_since_last_message']);
 
+    # maybe useful - not deleting
     class GetRoomPowerBehaviour(PeriodicBehaviour):
 
         async def run(self):
