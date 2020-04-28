@@ -16,6 +16,10 @@ class Calendar:
     def get_events(self):
         return self.events
 
+    def get_event(self, guid):
+        if guid in self.events.keys():
+            return self.events[guid]
+
     def is_free(self, start_date, end_date):
         for start, end in self.events.values():
             if start <= start_date < end:
