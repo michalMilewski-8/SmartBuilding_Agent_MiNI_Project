@@ -30,5 +30,5 @@ class Calendar:
 
     def delete_old_events(self, date):
         for guid in self.events:
-            if self.events[guid] < date:
+            if self.events[guid][1] < date:
                 self.delete_event(guid)
