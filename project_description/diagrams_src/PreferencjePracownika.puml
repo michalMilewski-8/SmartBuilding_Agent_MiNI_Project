@@ -1,0 +1,8 @@
+@startuml
+actor AgentPersonalny
+actor AgentPokojuOsobistego
+
+
+AgentPersonalny->AgentPokojuOsobistego: preferences_inform
+
+@enduml

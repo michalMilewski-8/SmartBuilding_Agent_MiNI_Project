@@ -1,0 +1,8 @@
+@startuml
+actor "AgenciPokojówSpotkań/AgentPokojuOsobistego"
+actor AgentZewnętrzny
+
+"AgenciPokojówSpotkań/AgentPokojuOsobistego" -> AgentZewnętrzny : outdoor_temperature_request
+AgentZewnętrzny -> "AgenciPokojówSpotkań/AgentPokojuOsobistego" : outdoor_temperature_inform
+
+@enduml
