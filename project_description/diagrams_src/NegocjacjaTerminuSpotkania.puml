@@ -13,5 +13,6 @@ loop dopóki jest co negocjować lub stanęło na starym czasie
 	end
 end
 
+AgentCentralnyPlanujący -> AgentPersonalny: move_meeting_inform
 AgentCentralnyPlanujący -> AgentPokojuSpotkań: move_meeting_inform
 @enduml
