@@ -5,6 +5,7 @@ from spade.template import Template
 from spade import quit_spade
 import json
 import uuid
+import time
 
 
 class PersonalAgent(Agent):
@@ -74,55 +75,69 @@ class PersonalAgent(Agent):
     move_meeting_inform_template.set_metadata('type','move_meeting')
 
     class SendMeetRequestBehaviour(CyclicBehaviour):
-	async def run(self):
-	    msg = PersonalAgent.prepare_meet_request(self, uuid.uuid4(), 'start_date','end_date',20,['AA@AA', 'bb@bb'],'central_agent')
-	    await self.send(msg)
-	    #tu czekanie na template meet_inform
+        async def run(self):
+            msg = PersonalAgent.prepare_meet_request(self, uuid.uuid4(), 'start_date','end_date',20,['AA@AA', 'bb@bb'],'central_agent')
+            await self.send(msg)
+            #tu czekanie na template meet_inform
 
     class SendLateInformBehaviour(CyclicBehaviour):
-	async def run(self):
-	    msg = PersonalAgent.prepare_late_inform(self, 'arrival_date', 'central_agent')
-	    await self.send(msg)
-	    #tu czekanie na template late_confirm
+        async def run(self):
+            msg = PersonalAgent.prepare_late_inform(self, 'arrival_date', 'central_agent')
+            await self.send(msg)
+            #tu czekanie na template late_confirm
 
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
-	async def run(self):
-	    msg = await self.receive()
-	    msg_data = json.loads(msg.body)
+        async def run(self):
+            msg = await self.receive()
+            msg_data = json.loads(msg.body)
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
-	async def run(self):
-	    msg = await self.receive()
-	    msg_data = json.loads(msg.body)
+        async def run(self):
+            msg = await self.receive()
+            msg_data = json.loads(msg.body)
 
     class SendPreferencesInformBehaviour(CyclicBehaviour):
-	async def run(self):
-	    msg = PersonalAgent.prepare_preferences_inform(self, 'arrival_date', 'private_room_agent')
-	    await self.send(msg)
+        async def run(self):
+            msg = PersonalAgent.prepare_preferences_inform(self, 'arrival_date', 'private_room_agent')
+            await self.send(msg)
 
     class ReceiveMoveMeetingProposeBehaviour(CyclicBehaviour):
-	async def run(self):
-	    msg = await self.receive()
-	    msg_data = json.loads(msg.body)
-	    # wyslane accept lub refuse
+        async def run(self):
+            msg = await self.receive()
+            msg_data = json.loads(msg.body)
+            # wyslane accept lub refuse
 
     class ReceiveMoveMeetingInformBehaviour(CyclicBehaviour):
-	async def run(self):
-	    msg = await self.receive()
-	    msg_data = json.loads(msg.body)
+        async def run(self):
+            msg = await self.receive()
+            msg_data = json.loads(msg.body)
 
-    async def setup(self)
-	sending = self.SendMeetRequestBehaviour()
-	self.add_behaviour(sending)
-	late_inform = self.SendLateInformBehaviour()
-	self.add_behaviour(late_inform)
-        new_meeting = self.ReceiveNewMeetingInformBehaviour()
-	self.add_behaviour(new_meeting,new_meeting_inform_template)
-        datetime_inform = self.ReceiveDatetimeInformBehaviour()
-	self.add_behaviour(datetime_inform,datetime_inform_template)
-	preferences = self.SendPreferencesInformBehaviour()
-	self.add_behaviour(preferences)
-	move_meeting_propose = self.ReceiveMoveMeetingProposeBehaviour()
-	self.add_behaviour(move_meeting_propose,move_meeting_propose_template)
-	move_meeting_inform = self.ReceiveMoveMeetingInformBehaviour()
-	self.add_behaviour(move_meeting_inform,move_meeting_inform_template)
+    async def setup(self):
+        print("Personal agent setup")
+        # sending = self.SendMeetRequestBehaviour()
+        # self.add_behaviour(sending)
+        # late_inform = self.SendLateInformBehaviour()
+        # self.add_behaviour(late_inform)
+        # new_meeting = self.ReceiveNewMeetingInformBehaviour()
+        # self.add_behaviour(new_meeting,new_meeting_inform_template)
+        # datetime_inform = self.ReceiveDatetimeInformBehaviour()
+        # self.add_behaviour(datetime_inform,datetime_inform_template)
+        # preferences = self.SendPreferencesInformBehaviour()
+        # self.add_behaviour(preferences)
+        # move_meeting_propose = self.ReceiveMoveMeetingProposeBehaviour()
+        # self.add_behaviour(move_meeting_propose,move_meeting_propose_template)
+        # move_meeting_inform = self.ReceiveMoveMeetingInformBehaviour()
+        # self.add_behaviour(move_meeting_inform,move_meeting_inform_template)
+
+
+if __name__ == "__main__":
+    agent = PersonalAgent("personal@localhost", "personal")
+    agent.start()
+
+    # wait until user interrupts with ctrl+C
+    while True:
+        try:
+            time.sleep(1)
+        except KeyboardInterrupt:
+            break
+    agent.stop()
