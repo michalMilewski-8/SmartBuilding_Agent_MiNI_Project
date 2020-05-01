@@ -1,0 +1,9 @@
+@startuml
+actor AgentEnergetyk
+actor AgenciPokojówSpotkań
+actor AgenciPokojówOsobistych
+
+AgenciPokojówSpotkań -> AgentEnergetyk : energy_usage_inform
+AgenciPokojówOsobistych -> AgentEnergetyk : energy_usage_inform
+
+@enduml
