@@ -6,6 +6,7 @@ from spade import quit_spade
 import json
 import uuid
 import time
+import asyncio
 
 
 class PersonalAgent(Agent):
@@ -97,8 +98,10 @@ class PersonalAgent(Agent):
             msg_data = json.loads(msg.body)
 
     class SendPreferencesInformBehaviour(CyclicBehaviour):
-        async def run(self):
-            msg = PersonalAgent.prepare_preferences_inform(self, 'arrival_date', 'private_room_agent')
+        async def run(self): 
+            print('sending')
+            msg = PersonalAgent.prepare_preferences_inform(self, 20, 'private_room@localhost')
+            await asyncio.sleep(10)
             await self.send(msg)
 
     class ReceiveMoveMeetingProposeBehaviour(CyclicBehaviour):
@@ -122,8 +125,8 @@ class PersonalAgent(Agent):
         # self.add_behaviour(new_meeting,new_meeting_inform_template)
         # datetime_inform = self.ReceiveDatetimeInformBehaviour()
         # self.add_behaviour(datetime_inform,datetime_inform_template)
-        # preferences = self.SendPreferencesInformBehaviour()
-        # self.add_behaviour(preferences)
+        preferences = self.SendPreferencesInformBehaviour()
+        self.add_behaviour(preferences)
         # move_meeting_propose = self.ReceiveMoveMeetingProposeBehaviour()
         # self.add_behaviour(move_meeting_propose,move_meeting_propose_template)
         # move_meeting_inform = self.ReceiveMoveMeetingInformBehaviour()

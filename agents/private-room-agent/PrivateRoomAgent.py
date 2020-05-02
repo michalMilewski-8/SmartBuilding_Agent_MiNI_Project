@@ -57,9 +57,7 @@ class PrivateRoomAgent(Agent):
     outdoor_temperature_inform_template.set_metadata('performative','inform')
     outdoor_temperature_inform_template.set_metadata('type','outdoor_temperature')
 
-    preferences_inform_template = Template()
-    preferences_inform_template.set_metadata('performative','inform')
-    preferences_inform_template.set_metadata('type','preferences')
+    
 
 
     class ReceiveRoomDataExchangeRequestBehaviour(CyclicBehaviour):
@@ -91,12 +89,19 @@ class PrivateRoomAgent(Agent):
 
     class ReceivePreferencesInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            msg_data = json.loads(msg.body)
+            msg = await self.receive(timeout = 10)
+            if msg:
+                msg_data = (json.loads(msg.body))
+                print("Optimal temperature: {}".format(msg_data["optimal_temperature"]))
+            else:
+                print("Did not received any message after 10 seconds")
 
 
     async def setup(self):
         print("Private room agent setup")
+        preferences_inform_template = Template()
+        preferences_inform_template.set_metadata('performative','inform')
+        preferences_inform_template.set_metadata('type','preferences')
         # receive_room_data_request = self.ReceiveRoomDataExchangeRequestBehaviour()
         # self.add_behaviour(room_data,room_data_exchange_request_template)
         # send_room_data_request = self.SendRoomDataExchangeRequestBehaviour()
@@ -107,8 +112,8 @@ class PrivateRoomAgent(Agent):
         # self.add_behaviour(energy_usage)
         # outdoor_temperature = self.SendOutdoorTemperatureRequestBehaviour()
         # self.add_behaviour(outdoor_temperature)
-        # preferences = self.ReceivePreferencesInformBehaviour()
-        # self.add_behaviour(preferences,preferences_inform_template)
+        preferences = self.ReceivePreferencesInformBehaviour()
+        self.add_behaviour(preferences,preferences_inform_template)
 
 if __name__ == "__main__":
     agent = PrivateRoomAgent("private_room@localhost", "private_room")
