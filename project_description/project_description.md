@@ -1,4 +1,4 @@
-
+# Raport 1
 
 ## Struktura systemu agentowego:
   - kalendarz centralny - będzie jednocześnie centralnym agentem podejmującym wszelkie decyzje
@@ -277,3 +277,21 @@ move_meeting_inform = {
 ## Plan działania
 
  - Implementacja dotychczas opracowanych założeń.
+
+# Raport 2.5
+
+## Zmiany
+
+ Odłożyliśmy protokół związany z negocjacją na boczny plan, zajmiemy się nim w przyszłości.
+
+## Postępy
+
+ Zaimplementowaliśmy wysyłanie i odbieranie wiadomości (bez głębszego analizowania zawartości przychodzących wiadomości) w poszczególnych agentach.
+
+## W toku
+
+ Rozpoczęliśmy prace nad niezbędną logiką związaną z wysyłaniem i obieraniem wiadomości.
+
+## Plany
+
+ Po zaimplementowaniu podstawowej logiki przygotujemy scenariusze, na których chcielibyśmy zaprezentować nasz system, dodamy wymagane funkcjonalności i przygotujemy te scenariusze.
