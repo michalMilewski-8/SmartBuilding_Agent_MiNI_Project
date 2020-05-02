@@ -182,6 +182,7 @@ room_data_inform = {
 ```Python
 late_inform = {
     "arrival_datetime": "16-04-2020 11:00",
+    "meeting_guid": "AWDH5435-89oij-JIKI"
 }
 ```
 
