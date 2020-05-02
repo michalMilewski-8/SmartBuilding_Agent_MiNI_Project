@@ -268,7 +268,8 @@ refuse_proposal = {
 move_meeting_inform = {
     "meeting_guid": "AWDH5435-89oij-JIKI",
     "new_start_date": "23-01-2020 12:23",
-    "new_end_date":"23-01-2020 14:23"
+    "new_end_date": "23-01-2020 14:23",
+    "delete_meeting": true
 }
 ```
 
