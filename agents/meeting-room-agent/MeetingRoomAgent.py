@@ -74,7 +74,6 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive()
             msg_data = json.loads(msg.body)
-            #wyslanie room_data_inform
 
     class SendRoomDataExchangeRequestBehaviour(CyclicBehaviour):
         async def run(self):
@@ -95,7 +94,6 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = MeetingRoomAgent.prepare_outdoor_temperature_request(self, 'outdoor_agent')
             await self.send(msg)
-            #czekanie na inform
 
     class ReceiveMoveMeetingInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -104,20 +102,6 @@ class MeetingRoomAgent(Agent):
 
     async def setup(self):
         print("Meeting room agent setup")
-        # new_meeting = self.ReceiveNewMeetingInformBehaviour()
-        # self.add_behaviour(new_meeting,new_meeting_inform_template)
-        # receive_room_data_request = self.ReceiveRoomDataExchangeRequestBehaviour()
-        # self.add_behaviour(room_data,room_data_exchange_request_template)
-        # send_room_data_request = self.SendRoomDataExchangeRequestBehaviour()
-        # self.add_behaviour(send_room_data_request)
-        # datetime_inform = self.ReceiveDatetimeInformBehaviour()
-        # self.add_behaviour(datetime_inform,datetime_inform_template)
-        # energy_usage = self.SendEnergyUsageInformBehaviour()
-        # self.add_behaviour(energy_usage)
-        # outdoor_temperature = self.SendOutdoorTemperatureRequestBehaviour()
-        # self.add_behaviour(outdoor_temperature)
-        # move_meeting = self.ReceiveMoveMeetingInformBehaviour()
-        # self.add_behaviour(move_meeting,move_meeting_inform_template)
 
 if __name__ == "__main__":
     agent = MeetingRoomAgent("meeting_room@localhost", "meeting_room")
