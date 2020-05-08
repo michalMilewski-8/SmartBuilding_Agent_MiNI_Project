@@ -3,17 +3,19 @@ from spade.behaviour import CyclicBehaviour
 from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
-from spade import quit_spade
+from sb_calendar import Calendar
+
 import json
 import uuid
 import time
-import asyncio
+
 
 
 class PersonalAgent(Agent):
 
     personal_room_jid = ""
     preferred_temperature = 20
+    personal_calendar = Calendar()
 
     @staticmethod
     def prepare_meet_request(self, guid, start_date, end_date, temperature, participants, receivers):
@@ -80,7 +82,7 @@ class PersonalAgent(Agent):
     move_meeting_inform_template.set_metadata('performative','inform')
     move_meeting_inform_template.set_metadata('type','move_meeting')
 
-    class SendMeetRequestBehaviour(CyclicBehaviour):
+    class SendMeetRequestBehaviour(OneShotBehaviour):
         async def run(self):
             msg = PersonalAgent.prepare_meet_request(self, uuid.uuid4(), 'start_date', 'end_date', 20,
                                                      ['AA@AA', 'bb@bb'], 'central_agent')
@@ -95,6 +97,8 @@ class PersonalAgent(Agent):
         async def run(self):
             msg = await self.receive()
             msg_data = json.loads(msg.body)
+            agent.personal_calendar.add_event(msg_data.get('start_date'), msg_data.get('end_date'),
+                                              msg_data.get('temperature'))
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):

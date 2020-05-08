@@ -2,11 +2,14 @@ from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
-from spade import quit_spade
+from sb_calendar import Calendar
+
 import json
 import time
 
+
 class MeetingRoomAgent(Agent):
+    personal_calendar = Calendar()
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
         msg = Message(to=receivers)
@@ -39,7 +42,6 @@ class MeetingRoomAgent(Agent):
         msg.body = json.dumps({})
         return msg
 
-
     new_meeting_inform_template = Template()
     new_meeting_inform_template.set_metadata('performative','inform')
     new_meeting_inform_template.set_metadata('type','new_meeting')
@@ -64,11 +66,12 @@ class MeetingRoomAgent(Agent):
     move_meeting_inform_template.set_metadata('performative','inform')
     move_meeting_inform_template.set_metadata('type','move_meeting')
 
-
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive()
             msg_data = json.loads(msg.body)
+            agent.personal_calendar.add_event(msg_data.get('start_date'), msg_data.get('end_date'),
+                                              msg_data.get('temperature'))
 
     class ReceiveRoomDataExchangeRequestBehaviour(CyclicBehaviour):
         async def run(self):
@@ -102,6 +105,7 @@ class MeetingRoomAgent(Agent):
 
     async def setup(self):
         print("Meeting room agent setup")
+
 
 if __name__ == "__main__":
     agent = MeetingRoomAgent("meeting_room@localhost", "meeting_room")
