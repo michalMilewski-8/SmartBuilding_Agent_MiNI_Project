@@ -10,6 +10,9 @@ from spade.message import Message
 from spade.template import Template
 from clock_agent.clock_agent import ClockAgent
 from meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
+from private_room_agent.PrivateRoomAgent import PrivateRoomAgent
+from personal_agent.PersonalAgent import PersonalAgent
+from central_agent.CentralAgent import CentralAgent
 
 meeting_room_agent = MeetingRoomAgent("meeting_room@localhost", "meeting_room")
 meeting_room_agent.start()
@@ -33,3 +36,7 @@ while True:
     except KeyboardInterrupt:
         break
 clock_agent.stop()
+meeting_room_agent.stop()
+private_room_agent.stop()
+central_agent.stop()
+personal_agent.stop()
