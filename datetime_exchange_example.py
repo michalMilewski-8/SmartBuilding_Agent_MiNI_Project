@@ -9,9 +9,22 @@ from spade.behaviour import PeriodicBehaviour
 from spade.message import Message
 from spade.template import Template
 from clock_agent.clock_agent import ClockAgent
+from meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
+
+meeting_room_agent = MeetingRoomAgent("meeting_room@localhost", "meeting_room")
+meeting_room_agent.start()
+
+private_room_agent = MeetingRoomAgent("private_room@localhost", "private_room")
+private_room_agent.start()
+
+personal_agent = MeetingRoomAgent("personal@localhost", "personal")
+personal_agent.start()
+
+central_agent = MeetingRoomAgent("central@localhost", "central")
+central_agent.start()
 
 clock_agent = ClockAgent("clock@localhost", "clock")
-clock_agent.agents_jids = ["gunwo"]
+clock_agent.agents_jids = ["meeting_room@localhost", "private_room@localhost", "personal@localhost", "central@localhost"]
 clock_agent.start()
 
 while True:

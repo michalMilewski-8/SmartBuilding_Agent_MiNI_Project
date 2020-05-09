@@ -14,22 +14,24 @@ import asyncio
 class ClockAgent(Agent):
 
     async def setup(self):
-        self.start_date_virtual = datetime.now()
-        self.start_date_real = datetime.now()
+        self.last_date_virtual = datetime.now()
+        self.last_date_real = datetime.now()
         print(self.agents_jids)
-        send_date_behaviour = self.SendDate(period = 2)
+        send_date_behaviour = self.SendDate(period = 5)
         self.add_behaviour(send_date_behaviour)
 
     class SendDate(PeriodicBehaviour):
         async def run(self): 
+            real_time_difference = datetime.now() - self.agent.last_date_real
+            self.agent.last_date_real = datetime.now()
+            virtual_time_difference = real_time_difference * 60
+            virtual_date = self.agent.last_date_virtual + virtual_time_difference
+            self.agent.last_date_virtual = virtual_date
             for agent in self.agent.agents_jids:
-                print("sending date to " + agent)
+                print(str(self.agent.jid) + " sending date to " + agent)
                 msg = Message(to = agent)
                 msg.set_metadata("performative", "inform")
                 msg.set_metadata("type", "datetime_inform")
-                real_time_difference = datetime.now() - self.agent.start_date_real
-                virtual_time_difference = real_time_difference / 360
-                virtual_date = self.agent.start_date_virtual + virtual_time_difference
                 msg.body = json.dumps({'datetime': str(virtual_date)})
                 await self.send(msg)
 

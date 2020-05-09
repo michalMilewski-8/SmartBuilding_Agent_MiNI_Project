@@ -4,19 +4,22 @@ from spade.message import Message
 from spade.template import Template
 from spade import quit_spade
 import json
-
+from datetime import datetime
 
 class CentralAgent(Agent):
 
     def __init__(self):
         super.__init__()
-        self.current_time = 0
 
     def setup(self):
-        time_sync_template = Template()
-        time_sync_template.set_metadata('type', 'datetime_inform')
-        time_sync_template.set_metadata('performative', 'inform')
-        self.add_behaviour(self.TimeSynchronizationBehaviour(), time_sync_template)
+        print(str(self.jid) + " Central agent setup")
+        self.date = datetime.now()
+        
+        datetime_inform_template = Template()
+        datetime_inform_template.set_metadata('performative','inform')
+        datetime_inform_template.set_metadata("type","datetime_inform")
+        datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
+        self.add_behaviour(datetimeBehaviour,datetime_inform_template)
 
     # @staticmethod
     # def prepare_new_meeting_request(self, date, temperature, organizer_jid, receivers):
@@ -102,13 +105,13 @@ class CentralAgent(Agent):
     #         if 'power' in response_body:
     #             self.agent.power(response_body['power'])
 
-    class TimeSynchronizationBehaviour(CyclicBehaviour):
-
+    class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            msg_body = json.dumps(msg.body)
-            if 'datetime' in msg_body:
-                self.agent.current_time = msg_body['datetime']
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                self.agent.date = msg_data["datetime"]
+                print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
 
     class MeetingBookingBehaviour(CyclicBehaviour):
 
