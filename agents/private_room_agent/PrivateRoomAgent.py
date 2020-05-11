@@ -5,6 +5,10 @@ from spade.template import Template
 from spade import quit_spade
 import json
 import time
+import datetime
+import sys
+sys.path.insert(1, 'agents')
+from energy import heat_balance, air_conditioner
 
 
 class PrivateRoomAgent(Agent):
@@ -75,6 +79,23 @@ class PrivateRoomAgent(Agent):
         async def run(self):
             msg = await self.receive()
             msg_data = json.loads(msg.body)
+            new_time = datetime.datetime.strptime(msg_data['datetime'], "%Y-%m-%d %H:%M")
+            time_elapsed =  new_time - self.agent.last_time
+            self.agent.energy_used = self.agent.ac_power * time_elapsed.seconds
+            self.agent.last_time = new_time
+            heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
+                time_elapsed, self.agent.temperature, self.agent.room_capacity, 
+                self.agent.neighbors, self.agent.ac_power)
+            self.agent.temperature -= temperature_lost
+            #tu ustawianie temperatury
+            heat_needed = air_conditioner(
+                self.agent.temperature, self.agent.TODO_temperatura_ktora_ma_byc,
+                self.agent.ac_performance, self.agent.room_capacity
+            )
+            heat_needed += heat_lost
+            self.agent.ac_power += heat_needed / self.agent.TODO_czas_do_spotkania_w_sekundach
+            b = self.agent.SendEnergyUsageInformBehaviour()
+            self.agent.add_behaviour(b)
 
     class SendEnergyUsageInformBehaviour(CyclicBehaviour):
         async def run(self):
