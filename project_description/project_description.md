@@ -55,31 +55,31 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 
  - Rola: Agent pokoju spotkań
  - Opis: Agent reprezentujący pokój spotkań. Odpowiadający za umawianie spotkań. Kontroluje swoją temperaturę. Przechowuje własny kalendarz
- - Protokoły i Aktywności: UmawianieSpotkania, WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie
+ - Protokoły i Aktywności: UmawianieSpotkania, WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
  - Uprawnienia: Odczyt i modyfikacje kalendarza pokoju. Dostęp do termometru i klimatyzacji.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = (UmawianieSpotkania | WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie) ω
+       EGZYSTENCJA = (UmawianieSpotkania | WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
 
 #### Agent pokoju osobistego
 
  - Rola: Agent pokoju osobistego
  - Opis: Agent reprezentujący pokój osobisty. Przechowuje własny kalendarz.
- - Protokoły i Aktywności: WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, PreferencjePracownika, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie
+ - Protokoły i Aktywności: WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, PreferencjePracownika, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
  - Uprawnienia: Odczyt i modyfikacje kalendarza pokoju. Dostęp do termometru i klimatyzacji.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie) ω
+       EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
 
 #### Agent centralny planujący
 
  - Rola: Agent centralny planujący
  - Opis: Agent przydzielający pokoje do spotkań. Przechowuje własny kalendarz.
- - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniu, NegocjacjaTerminuSpotkania, InformowanieODacieIGodzinie
+ - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniu, NegocjacjaTerminuSpotkania, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
  - Uprawnienia: Odczyt i modyfikacje kalendarza.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniu | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie) ω
+       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniu | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
 
 #### Agent "energetyk"
 
@@ -120,6 +120,7 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
  - PreferencjePracownika, 
  - ZapytanieOTemperaturęNaZewnątrz,
  - NegocjacjaTerminuSpotkania
+ - OcenaMożliwościPrzeprowadzeniaSpotkania
 
 #### UmawianieSpotkania
 ##### Diagram
@@ -274,6 +275,40 @@ move_meeting_inform = {
 }
 ```
 
+#### Ocena możliwości przeprowadzenia spotkania
+##### Diagram
+![](diagrams_img/OcenaMożliwościPrzeprowadzeniaSpotkania.svg)
+
+##### Przykładowe wiadomości
+```Python
+meeting_score_request = {
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
+    "temperature":20
+}
+```
+
+```Python
+temperature_at_request = {
+    "request_guid": "AWDH5435-89oij-JIKI",
+    "date": "23-01-2020 14:23"
+}
+```
+
+```Python
+temperature_at_inform = {
+    "request_guid": "AWDH5435-89oij-JIKI",
+    "temperature": 20
+}
+```
+
+```Python
+meeting_score_inform = {
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "score": 55
+}
+```
 ## Plan działania
 
  - Implementacja dotychczas opracowanych założeń.
