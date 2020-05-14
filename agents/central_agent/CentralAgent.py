@@ -49,6 +49,14 @@ class CentralAgent(Agent):
     #     msg.body = json.dumps({'date': date})
     #     return msg
 
+    @staticmethod
+    def prepare_meeting_score_request(self, receivers, guid, start, end, temperature):
+        msg = Message(to=receivers)
+        msg.set_metadata('performative', 'request')
+        msg.set_metadata('type', 'meeting_score_request')
+        msg.body = json.dumps({'meeting-guid': guid, 'start_date': start, 'end_date': end, 'temperature': temperature})
+        return msg
+
     async def find_best_room(self, behav, msg_guid, start_date, end_date, participants, organiser):
         print("find_best_room started")
         # do smth here
