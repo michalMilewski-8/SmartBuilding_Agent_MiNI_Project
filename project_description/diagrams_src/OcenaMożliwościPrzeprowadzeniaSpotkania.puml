@@ -1,0 +1,14 @@
+@startuml
+actor AgentCentralnyPlanujący
+actor AgentPokojuSpotkań
+actor AgenciSąsiadówPokoju
+
+AgentCentralnyPlanujący->AgentPokojuSpotkań: meeting_score_request
+
+opt	
+	AgentPokojuSpotkań -> AgenciSąsiadówPokoju: temperature_at_request
+	AgenciSąsiadówPokoju -> AgentPokojuSpotkań: temperature_at_inform
+end
+
+AgentPokojuSpotkań -> AgentCentralnyPlanujący: meeting_score_inform
+@enduml
