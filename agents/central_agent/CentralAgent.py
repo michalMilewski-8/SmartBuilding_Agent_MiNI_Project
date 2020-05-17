@@ -12,6 +12,14 @@ class CentralAgent(Agent):
     meeting_room_calendars = {}
     meeting_room_neighbours = {}
 
+    @staticmethod
+    def prepare_meeting_score_request(self, receivers, guid, start, end, temperature):
+        msg = Message(to=receivers)
+        msg.set_metadata('performative', 'request')
+        msg.set_metadata('type', 'meeting_score_request')
+        msg.body = json.dumps({'meeting-guid': guid, 'start_date': start, 'end_date': end, 'temperature': temperature})
+        return msg
+
     def setup(self):
         time_sync_template = Template()
         time_sync_template.set_metadata('type', 'datetime_inform')
@@ -21,6 +29,10 @@ class CentralAgent(Agent):
         meeting_request_template.set_metadata('type', 'meet_request')
         meeting_request_template.set_metadata('performative', 'request')
         self.add_behaviour(self.MeetingBookingBehaviour(), meeting_request_template)
+        meeting_score_template = Template()
+        meeting_score_template.set_metadata('type', 'meeting_score_inform')
+        meeting_score_template.set_metadata('performative', 'inform')
+        self.add_behaviour(ReceiveScoreBehaviour, meeting_score_template)
 
     async def find_best_room(self, msg_guid, start_date, end_date, participants, organiser, temp):
         print("find_best_room started")
@@ -110,3 +122,11 @@ class CentralAgent(Agent):
         async def run(self):
             msg = await self.receive()
             msg_body = json.dumps(msg.body)
+
+    class ReceiveScoreBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout = 1)
+            if msg:
+                print('received score')
+                #do smth useful
+            
