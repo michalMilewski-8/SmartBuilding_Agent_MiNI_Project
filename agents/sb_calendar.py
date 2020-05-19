@@ -1,11 +1,12 @@
 import datetime
 
 class Calendar:
-    def __init__(self):
+    def __init__(self, room_idle_temp = 16):
         self.events = {}
+        self.room_idle_temp = room_idle_temp;
 
-    def add_event(self, guid, start_date, end_date):
-        self.events[guid] = (start_date, end_date)
+    def add_event(self, guid, start_date, end_date, temp=22):
+        self.events[guid] = (start_date, end_date, temp)
 
     def delete_event(self, guid):
         self.events.pop(guid, None)
@@ -21,12 +22,69 @@ class Calendar:
             return self.events[guid]
 
     def is_free(self, start_date, end_date):
-        for start, end in self.events.values():
+        for start, end, temp in self.events.values():
             if start <= start_date < end:
                 return False
             if start < end_date <= end:
                 return False
         return True
+
+    def closest_meeting_by_start_to_end(self,start_date):
+        def compare(x, st):
+            if st >= x:
+                return st-x
+            else:
+                return None
+        return min(self.events, key= lambda x: compare(x[1][1], start_date))
+
+    def closest_meeting_by_end_to_start(self, end_date):
+        def compare(x, st):
+            if st <= x:
+                return x - st
+            else:
+                return None
+        return min(self.events, key=lambda x: compare(x[1][0], end_date))
+
+    def calculate_points(self, start_date, end_date, temp):
+        if self.is_free(start_date, end_date):
+            closest_before = self.closest_meeting_by_start_to_end(start_date)
+            closest_after = self.closest_meeting_by_end_to_start(end_date)
+            result = 0
+            if closest_after is not None:
+                dist_to = end_date - closest_after[1][0]
+                result += abs(temp - closest_after[1][2]) * dist_to
+            else:
+                result += abs(self.room_idle_temp - temp) * 1000
+
+            if closest_before is not None:
+                dist_bef = end_date - closest_before[1][0]
+                result += abs(temp - closest_before[1][2]) * dist_bef
+            else:
+                result += abs(self.room_idle_temp - temp) * 1000
+        else:
+            return float('inf')
+
+    def calculate_points_as_neighbour(self, start_date, end_date, temp):
+        if self.is_free(start_date, end_date):
+            return abs(self.room_idle_temp - temp) * (end_date - start_date)
+        else:
+            result = 0
+            look_date_start = start_date
+            look_date_end = end_date
+            for start, end, temp_ in self.events:
+                if start < look_date_end and end > look_date_start:
+                    if start > look_date_start and end < look_date_end:
+                        result += abs(temp_ - temp) * (end - start)
+                        result += self.calculate_points_as_neighbour(look_date_start, start, temp)
+                        result += self.calculate_points_as_neighbour(end, look_date_end, temp)
+                    elif start > look_date_start:
+                        result += abs(temp_ - temp) * (look_date_end - start)
+                        result += self.calculate_points_as_neighbour(look_date_start, start, temp)
+                    else:
+                        result += abs(temp_ - temp) * (end - look_date_start)
+                        result += self.calculate_points_as_neighbour(end, look_date_end, temp)
+                    break
+            return result
 
     def delete_old_events(self, date):
         for guid in self.events:
