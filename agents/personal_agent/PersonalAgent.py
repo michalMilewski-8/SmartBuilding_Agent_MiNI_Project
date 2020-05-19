@@ -8,8 +8,8 @@ from sb_calendar import Calendar
 import json
 import uuid
 import time
-
-
+import asyncio
+from datetime import datetime
 
 class PersonalAgent(Agent):
 
@@ -70,10 +70,6 @@ class PersonalAgent(Agent):
     late_confirm_template.set_metadata('performative','confirm')
     late_confirm_template.set_metadata('type','late')
 
-    datetime_inform_template = Template()
-    datetime_inform_template.set_metadata('performative','inform')
-    datetime_inform_template.set_metadata('type','datetime')
-
     move_meeting_propose_template = Template()
     move_meeting_propose_template.set_metadata('performative','propose')
     move_meeting_propose_template.set_metadata('type','move_meeting')
@@ -102,8 +98,11 @@ class PersonalAgent(Agent):
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            msg_data = json.loads(msg.body)
+            msg = await self.receive(timeout=1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                self.agent.date = msg_data["datetime"]
+                print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
 
     class SendPreferencesInformBehaviour(OneShotBehaviour):
         async def run(self): 
@@ -122,14 +121,21 @@ class PersonalAgent(Agent):
             msg_data = json.loads(msg.body)
 
     async def setup(self):
-        print("Personal agent setup")
+        print(str(self.jid) + " Personal agent setup")
+        self.date = datetime.now()
+        
+        datetime_inform_template = Template()
+        datetime_inform_template.set_metadata('performative','inform')
+        datetime_inform_template.set_metadata("type","datetime_inform")
+        datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
+        self.add_behaviour(datetimeBehaviour, datetime_inform_template)
 
     def set_personal_room(self, personal_room_jid):
         self.personal_room_jid = personal_room_jid
 
     def set_preferred_temperature(self, preferred_temp):
         self.preferred_temperature = preferred_temp
-        preferences = self.prepare_preferences_inform()
+        preferences = self.SendPreferencesInformBehaviour()
         self.add_behaviour(preferences)
 
 
