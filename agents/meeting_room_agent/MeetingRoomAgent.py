@@ -6,14 +6,17 @@ from sb_calendar import Calendar
 
 import json
 import time
-import datetime
+from datetime import datetime
 import sys
 sys.path.insert(1, 'agents')
 from energy import heat_balance, air_conditioner
 
 
 class MeetingRoomAgent(Agent):
+
     personal_calendar = Calendar()
+
+
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
         msg = Message(to=receivers)
@@ -27,7 +30,7 @@ class MeetingRoomAgent(Agent):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
         msg.set_metadata('type', 'room_data')
-        msg.body = json.dumps({'temperature' : temperature})
+        msg.body = json.dumps({'temperature': temperature})
         return msg
 
     @staticmethod
@@ -47,28 +50,24 @@ class MeetingRoomAgent(Agent):
         return msg
 
     new_meeting_inform_template = Template()
-    new_meeting_inform_template.set_metadata('performative','inform')
-    new_meeting_inform_template.set_metadata('type','new_meeting')
+    new_meeting_inform_template.set_metadata('performative', 'inform')
+    new_meeting_inform_template.set_metadata('type', 'new_meeting')
 
     room_data_exchange_request_template = Template()
-    room_data_exchange_request_template.set_metadata('performative','request')
-    room_data_exchange_request_template.set_metadata('type','room_data_exchange')
+    room_data_exchange_request_template.set_metadata('performative', 'request')
+    room_data_exchange_request_template.set_metadata('type', 'room_data_exchange')
 
     room_data_inform_template = Template()
-    room_data_inform_template.set_metadata('performative','inform')
-    room_data_inform_template.set_metadata('type','room_data')
-
-    datetime_inform_template = Template()
-    datetime_inform_template.set_metadata('performative','inform')
-    datetime_inform_template.set_metadata('type','datetime')
+    room_data_inform_template.set_metadata('performative', 'inform')
+    room_data_inform_template.set_metadata('type', 'room_data')
 
     outdoor_temperature_inform_template = Template()
-    outdoor_temperature_inform_template.set_metadata('performative','inform')
-    outdoor_temperature_inform_template.set_metadata('type','outdoor_temperature')
+    outdoor_temperature_inform_template.set_metadata('performative', 'inform')
+    outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature')
 
     move_meeting_inform_template = Template()
-    move_meeting_inform_template.set_metadata('performative','inform')
-    move_meeting_inform_template.set_metadata('type','move_meeting')
+    move_meeting_inform_template.set_metadata('performative', 'inform')
+    move_meeting_inform_template.set_metadata('type', 'move_meeting')
 
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -89,23 +88,26 @@ class MeetingRoomAgent(Agent):
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            msg_data = json.loads(msg.body)
-            new_time = datetime.datetime.strptime(msg_data['datetime'], "%Y-%m-%d %H:%M")
-            self.agent.time_elapsed =  new_time - self.agent.last_time
-            self.agent.energy_used = self.agent.ac_power * self.agent.time_elapsed.seconds
-            self.agent.last_time = new_time
-            heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
-                self.agent.time_elapsed, self.agent.temperature, self.agent.room_capacity, 
-                self.agent.temperatures, self.agent.ac_power)
-            self.agent.temperature -= temperature_lost
-            #tu ustawianie temperatury
-            heat_needed = air_conditioner(self.agent.temperature, 
-                self.agent.TODO_temperatura_ktora_ma_byc, self.agent.room_capacity)
-            heat_needed += heat_lost
-            self.agent.ac_power += heat_needed / self.agent.TODO_czas_do_spotkania_w_sekundach / self.agent.ac_performance
-            b = self.agent.SendEnergyUsageInformBehaviour()
-            self.agent.add_behaviour(b)
+            msg = await self.receive(timeout=1)
+            if msg:
+              msg_data = json.loads(msg.body)
+              new_time = datetime.strptime(msg_data['datetime'], "%Y-%m-%d %H:%M")
+              self.agent.date = new_time
+              print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
+              self.agent.time_elapsed =  new_time - self.agent.last_time
+              self.agent.energy_used = self.agent.ac_power * self.agent.time_elapsed.seconds
+              self.agent.last_time = new_time
+              heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
+                  self.agent.time_elapsed, self.agent.temperature, self.agent.room_capacity, 
+                  self.agent.temperatures, self.agent.ac_power)
+              self.agent.temperature -= temperature_lost
+              #tu ustawianie temperatury
+              heat_needed = air_conditioner(self.agent.temperature, 
+                  self.agent.TODO_temperatura_ktora_ma_byc, self.agent.room_capacity)
+              heat_needed += heat_lost
+              self.agent.ac_power += heat_needed / self.agent.TODO_czas_do_spotkania_w_sekundach / self.agent.ac_performance
+              b = self.agent.SendEnergyUsageInformBehaviour()
+              self.agent.add_behaviour(b)
 
     class SendEnergyUsageInformBehaviour(OneShotBehaviour):
         async def run(self):
@@ -122,10 +124,18 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive()
             msg_data = json.loads(msg.body)
+    #         TODO(michal) implement this method
 
     async def setup(self):
-        print("Meeting room agent setup")
-        self.last_time = datetime.datetime.now()
+        print(str(self.jid) + " Meeting room agent setup")
+        self.date = datetime.now()
+        self.last_time = datetime.now()
+        
+        datetime_inform_template = Template()
+        datetime_inform_template.set_metadata('performative','inform')
+        datetime_inform_template.set_metadata("type","datetime_inform")
+        datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
+        self.add_behaviour(datetimeBehaviour,datetime_inform_template)
 
 
 if __name__ == "__main__":
