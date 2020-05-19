@@ -10,7 +10,10 @@ from datetime import datetime
 
 
 class MeetingRoomAgent(Agent):
+
     personal_calendar = Calendar()
+
+
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
         msg = Message(to=receivers)
@@ -24,7 +27,7 @@ class MeetingRoomAgent(Agent):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
         msg.set_metadata('type', 'room_data')
-        msg.body = json.dumps({'temperature' : temperature})
+        msg.body = json.dumps({'temperature': temperature})
         return msg
 
     @staticmethod
@@ -44,24 +47,24 @@ class MeetingRoomAgent(Agent):
         return msg
 
     new_meeting_inform_template = Template()
-    new_meeting_inform_template.set_metadata('performative','inform')
-    new_meeting_inform_template.set_metadata('type','new_meeting')
+    new_meeting_inform_template.set_metadata('performative', 'inform')
+    new_meeting_inform_template.set_metadata('type', 'new_meeting')
 
     room_data_exchange_request_template = Template()
-    room_data_exchange_request_template.set_metadata('performative','request')
-    room_data_exchange_request_template.set_metadata('type','room_data_exchange')
+    room_data_exchange_request_template.set_metadata('performative', 'request')
+    room_data_exchange_request_template.set_metadata('type', 'room_data_exchange')
 
     room_data_inform_template = Template()
-    room_data_inform_template.set_metadata('performative','inform')
-    room_data_inform_template.set_metadata('type','room_data')
+    room_data_inform_template.set_metadata('performative', 'inform')
+    room_data_inform_template.set_metadata('type', 'room_data')
 
     outdoor_temperature_inform_template = Template()
-    outdoor_temperature_inform_template.set_metadata('performative','inform')
-    outdoor_temperature_inform_template.set_metadata('type','outdoor_temperature')
+    outdoor_temperature_inform_template.set_metadata('performative', 'inform')
+    outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature')
 
     move_meeting_inform_template = Template()
-    move_meeting_inform_template.set_metadata('performative','inform')
-    move_meeting_inform_template.set_metadata('type','move_meeting')
+    move_meeting_inform_template.set_metadata('performative', 'inform')
+    move_meeting_inform_template.set_metadata('type', 'move_meeting')
 
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -82,7 +85,7 @@ class MeetingRoomAgent(Agent):
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive(timeout = 1)
+            msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.date = msg_data["datetime"]
@@ -102,6 +105,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive()
             msg_data = json.loads(msg.body)
+    #         TODO(michal) implement this method
 
     async def setup(self):
         print(str(self.jid) + " Meeting room agent setup")
