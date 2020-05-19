@@ -1,5 +1,7 @@
 from spade.agent import Agent
-from spade.behaviour import CyclicBehaviour, OneShotBehaviour
+from spade.behaviour import CyclicBehaviour
+from spade.behaviour import PeriodicBehaviour
+from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
 from sb_calendar import Calendar
@@ -21,7 +23,7 @@ class MeetingRoomAgent(Agent):
     def prepare_room_data_exchange_request(self, temperature, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'request')
-        msg.set_metadata('type', 'room_data_exchange')
+        msg.set_metadata('type', 'room_data_exchange_request')
         msg.body = json.dumps({'temperature' : temperature})
         return msg
 
@@ -29,8 +31,8 @@ class MeetingRoomAgent(Agent):
     def prepare_room_data_inform(self, temperature, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
-        msg.set_metadata('type', 'room_data')
-        msg.body = json.dumps({'temperature': temperature})
+        msg.set_metadata('type', 'room_data_inform')
+        msg.body = json.dumps({'temperature' : temperature})
         return msg
 
     @staticmethod
@@ -53,14 +55,6 @@ class MeetingRoomAgent(Agent):
     new_meeting_inform_template.set_metadata('performative', 'inform')
     new_meeting_inform_template.set_metadata('type', 'new_meeting')
 
-    room_data_exchange_request_template = Template()
-    room_data_exchange_request_template.set_metadata('performative', 'request')
-    room_data_exchange_request_template.set_metadata('type', 'room_data_exchange')
-
-    room_data_inform_template = Template()
-    room_data_inform_template.set_metadata('performative', 'inform')
-    room_data_inform_template.set_metadata('type', 'room_data')
-
     outdoor_temperature_inform_template = Template()
     outdoor_temperature_inform_template.set_metadata('performative', 'inform')
     outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature')
@@ -78,13 +72,31 @@ class MeetingRoomAgent(Agent):
 
     class ReceiveRoomDataExchangeRequestBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            msg_data = json.loads(msg.body)
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                self.agent.temperatures[msg.sender] = msg_data["temperature"]
+                print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(msg_data["temperature"]))
+                msg2 = MeetingRoomAgent.prepare_room_data_inform(self, self.agent.temperature, str(msg.sender))
+                print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
+                await self.send(msg2)
 
-    class SendRoomDataExchangeRequestBehaviour(CyclicBehaviour):
+    class ReceiveRoomDataInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = MeetingRoomAgent.prepare_room_data_exchange_request(self, 20, 'another_room_agent')
-            await self.send(msg)
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                self.agent.temperatures[msg.sender] = msg_data["temperature"]
+                print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(msg_data["temperature"]))
+
+
+    class SendRoomDataExchangeRequestBehaviour(PeriodicBehaviour):
+        async def run(self):
+            for neighbour in self.agent.neighbours:
+                if neighbour < str(self.agent.jid):
+                    msg = MeetingRoomAgent.prepare_room_data_exchange_request(self, self.agent.temperature, neighbour)
+                    print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
+                    await self.send(msg)
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -128,6 +140,21 @@ class MeetingRoomAgent(Agent):
 
     async def setup(self):
         print(str(self.jid) + " Meeting room agent setup")
+        
+        send_room_data_exchange_request_behaviour = self.SendRoomDataExchangeRequestBehaviour(period = 10)
+        self.add_behaviour(send_room_data_exchange_request_behaviour)
+
+        room_data_exchange_request_template = Template()
+        room_data_exchange_request_template.set_metadata('performative','request')
+        room_data_exchange_request_template.set_metadata('type','room_data_exchange_request')
+        receive_room_data_exchange_request_behaviour = self.ReceiveRoomDataExchangeRequestBehaviour()
+        self.add_behaviour(receive_room_data_exchange_request_behaviour,room_data_exchange_request_template)
+
+        room_data_inform_template = Template()
+        room_data_inform_template.set_metadata('performative','inform')
+        room_data_inform_template.set_metadata('type','room_data_inform')
+        receive_room_data_inform_behaviour = self.ReceiveRoomDataInformBehaviour()
+        self.add_behaviour(receive_room_data_inform_behaviour,room_data_inform_template)
         self.date = datetime.now()
         self.last_time = datetime.now()
         
