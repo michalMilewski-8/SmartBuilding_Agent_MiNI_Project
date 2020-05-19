@@ -97,7 +97,7 @@ class MeetingRoomAgent(Agent):
             self.agent.last_time = new_time
             heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
                 self.agent.time_elapsed, self.agent.temperature, self.agent.room_capacity, 
-                self.agent.neighbors, self.agent.ac_power)
+                self.agent.temperatures, self.agent.ac_power)
             self.agent.temperature -= temperature_lost
             #tu ustawianie temperatury
             heat_needed = air_conditioner(self.agent.temperature, 
