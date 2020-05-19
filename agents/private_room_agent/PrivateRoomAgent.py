@@ -5,7 +5,7 @@ from spade.template import Template
 from spade import quit_spade
 import json
 import time
-
+from datetime import datetime
 
 class PrivateRoomAgent(Agent):
 
@@ -53,10 +53,6 @@ class PrivateRoomAgent(Agent):
     room_data_inform_template.set_metadata('performative', 'inform')
     room_data_inform_template.set_metadata('type', 'room_data')
 
-    datetime_inform_template = Template()
-    datetime_inform_template.set_metadata('performative', 'inform')
-    datetime_inform_template.set_metadata('type', 'datetime')
-
     outdoor_temperature_inform_template = Template()
     outdoor_temperature_inform_template.set_metadata('performative', 'inform')
     outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature')
@@ -74,8 +70,11 @@ class PrivateRoomAgent(Agent):
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            msg_data = json.loads(msg.body)
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                self.agent.date = msg_data["datetime"]
+                print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
 
     class SendEnergyUsageInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -98,7 +97,15 @@ class PrivateRoomAgent(Agent):
                     agent.preferred_temperature = msg_data.get("optimal_temperature")
 
     async def setup(self):
-        print("Private room agent setup")
+        print(str(self.jid) + " Private room agent setup")
+        self.date = datetime.now()
+        
+        datetime_inform_template = Template()
+        datetime_inform_template.set_metadata('performative','inform')
+        datetime_inform_template.set_metadata("type","datetime_inform")
+        datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
+        self.add_behaviour(datetimeBehaviour,datetime_inform_template)
+
         preferences_inform_template = Template()
         preferences_inform_template.set_metadata('performative', 'inform')
         preferences_inform_template.set_metadata('type', 'preferences')
