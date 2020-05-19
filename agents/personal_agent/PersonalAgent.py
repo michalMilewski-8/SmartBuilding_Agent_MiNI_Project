@@ -98,7 +98,7 @@ class PersonalAgent(Agent):
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive(timeout = 1)
+            msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.date = msg_data["datetime"]
@@ -128,14 +128,14 @@ class PersonalAgent(Agent):
         datetime_inform_template.set_metadata('performative','inform')
         datetime_inform_template.set_metadata("type","datetime_inform")
         datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
-        self.add_behaviour(datetimeBehaviour,datetime_inform_template)
+        self.add_behaviour(datetimeBehaviour, datetime_inform_template)
 
     def set_personal_room(self, personal_room_jid):
         self.personal_room_jid = personal_room_jid
 
     def set_preferred_temperature(self, preferred_temp):
         self.preferred_temperature = preferred_temp
-        preferences = self.prepare_preferences_inform()
+        preferences = self.SendPreferencesInformBehaviour()
         self.add_behaviour(preferences)
 
 
