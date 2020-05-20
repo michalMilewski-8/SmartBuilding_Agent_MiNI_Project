@@ -51,6 +51,31 @@ class MeetingRoomAgent(Agent):
         msg.body = json.dumps({})
         return msg
 
+    @staticmethod
+    def prepare_temperature_at_request(self, receivers, guid, date):
+        msg = Message(to=receivers)
+        msg.set_metadata('performative', 'request')
+        msg.set_metadata('type', 'temperature_at_request')
+        msg.body = json.dumps({'request-guid': guid, 'date': date})
+        return msg
+
+    @staticmethod
+    def prepare_temperature_at_inform(self, receivers, guid, temperature):
+        msg = Message(to=receivers)
+        msg.set_metadata('performative', 'inform')
+        msg.set_metadata('type', 'temperature_at_inform')
+        msg.body = json.dumps({'request-guid': guid, 'temperature': temperature})
+        return msg
+
+    @staticmethod
+    def prepare_meeting_score_inform(self, receivers, guid, score):
+        msg = Message(to=receivers)
+        msg.set_metadata('performative', 'inform')
+        msg.set_metadata('type', 'meeting_score_inform')
+        msg.body = json.dumps({'meeting-guid': guid, 'score': score})
+        return msg
+
+
     new_meeting_inform_template = Template()
     new_meeting_inform_template.set_metadata('performative', 'inform')
     new_meeting_inform_template.set_metadata('type', 'new_meeting')
@@ -138,8 +163,69 @@ class MeetingRoomAgent(Agent):
             msg_data = json.loads(msg.body)
     #         TODO(michal) implement this method
 
+    class ReceiveMeetingScoreRequestBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                date_from = msg_data["start_date"]
+                date_to = msg_data["end_date"]
+                if not self.agent.personal_calendar.is_free(date_from,date_to):
+                    MeetingRoomAgent.prepare_meeting_score_inform("central",msg_data["meeting_guid"],0))
+                else:
+                    new_score = {
+                        "date_from": date_from,
+                        "date_to": date_to,
+                        "temperature": msg_data["temperature"],
+                        "temperatures": []
+                    }
+                    score_request_dict[msg_data["meeting_guid"]] = new_score
+                    for neighbour in self.agent.neighbours:
+                        msg2 = MeetingRoomAgent.prepare_temperature_at_request(neighbour, msg_data["meeting_guid"],date_from)
+                        await self.send(msg2)
+
+    class ReceiveTemperatureAtInformBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                guid = msg_data["request_guid"]
+                score_request_dict[guid]["temperatures"].append(msg_data["temperature"])
+                if(score_request_dict[guid]["temperatures"].count() == neighbours.count()):
+                    sum = 0
+                    for temp in score_request_dict[guid]["temperatures"]:
+                        sum = sum + temp
+                    sum = sum / neighbours.count()
+                    temp = self.agent.personal_calendar.get_temperature_at(score_request_dict[guid]["start_date"])
+                    temp = (temp + 0.1 * sum) / 1.1
+                    msg2 = MeetingRoomAgent.prepare_meeting_score_inform("central", guid, abs(temp - score_request_dict[guid]["temperature"]))
+                    await self.send(msg2)
+
+    class ReceiveTemperatureAtRequestBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                temp = self.agent.personal_calendar.get_temperature_at(msg_data["date"])
+                msg2 = MeetingRoomAgent.prepare_temperature_at_inform(msg.sender, msg_data["request_guid"], temp)
+                await self.send(msg2)
+
+
     async def setup(self):
         print(str(self.jid) + " Meeting room agent setup")
+
+        temperature_at_request_template = new Template()
+        temperature_at_request_template.set_metadata('performative', 'request')
+        temperature_at_request_template.set_metadata('type', 'temperature_at_request')
+        self.add_behaviour(ReceiveTemperatureAtRequestBehaviour, temperature_at_request_template)
+        temperature_at_inform_template = new Template()
+        temperature_at_inform_template.set_metadata('performative', 'inform')
+        temperature_at_inform_template.set_metadata('type', 'temperature_at_inform')
+        self.add_behaviour(ReceiveTemperatureAtInformBehaviour, temperature_at_inform_template)
+        meeting_score_request_template = new Template()
+        meeting_score_request_template.set_metadata('performative', 'request')
+        meeting_score_request_template.set_metadata('type', 'meeting_score_request')
+        self.add_behaviour(ReceiveMeetingScoreRequestBehaviour, meeting_score_request_template)
         
         send_room_data_exchange_request_behaviour = self.SendRoomDataExchangeRequestBehaviour(period = 10)
         self.add_behaviour(send_room_data_exchange_request_behaviour)

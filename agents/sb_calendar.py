@@ -90,3 +90,15 @@ class Calendar:
         for guid in self.events:
             if self.events[guid][1] < date:
                 self.delete_event(guid)
+
+    def get_temperature_at(self, date):
+        temp_before = self.room_idle_temp
+        temp_after = self.room_idle_temp
+        date_before = datetime.datetime(1900,1,1)
+        date_after = datetime.datetime(2100,1,1)
+        for start, end, temp in self.events:
+            if end < date and end > date_before:
+                temp_before = temp
+            if start > date and start < date_after:
+                temp_after = temp
+        return (temp_after+temp_before)/2
