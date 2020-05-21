@@ -10,21 +10,26 @@ import uuid
 import time
 import asyncio
 from datetime import datetime
+from ..time_conversion import time_to_str, str_to_time
+
 
 class PersonalAgent(Agent):
 
-    personal_room_jid = ""
-    preferred_temperature = 20
-    personal_calendar = Calendar()
-    central = ""
+    def __init__(self, jid, password):
+        super().__init__(jid, password)
+        self.personal_room_jid = ""
+        self.preferred_temperature = 20
+        self.personal_calendar = Calendar()
+        self.central = ""
 
     @staticmethod
     def prepare_meet_request(self, guid, start_date, end_date, temperature, participants, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'request')
         msg.set_metadata('type', 'meet_request')
-        msg.body = json.dumps({'meeting_guid': guid, 'start_date': str(start_date), 'end_date': str(end_date),
-                               'temperature': temperature, 'participants': participants})
+        msg.body = json.dumps(
+            {'meeting_guid': guid, 'start_date': time_to_str(start_date), 'end_date': time_to_str(end_date),
+             'temperature': temperature, 'participants': participants})
         return msg
 
     @staticmethod
@@ -32,7 +37,7 @@ class PersonalAgent(Agent):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
         msg.set_metadata('type', 'late')
-        msg.body = json.dumps({'arrival_datetime': arrival_datetime})
+        msg.body = json.dumps({'arrival_datetime': time_to_str(arrival_datetime)})
         return msg
 
     @staticmethod
@@ -59,38 +64,41 @@ class PersonalAgent(Agent):
         msg.body = json.dumps({'meeting_guid': guid})
         return msg
 
-    def new_meeting_set(self,start_date, end_date, temp, participants):
+    def new_meeting_set(self, start_date, end_date, temp, participants):
         new_meeting_behav = self.SendMeetRequestBehaviour()
         new_meeting_behav.set_meeting_details(start_date, end_date, temp, participants)
         self.add_behaviour(new_meeting_behav)
-    
+
     meet_inform_template = Template()
     meet_inform_template.set_metadata('performative', 'inform')
     meet_inform_template.set_metadata('type', 'meet_inform')
 
     new_meeting_inform_template = Template()
-    new_meeting_inform_template.set_metadata('performative','inform')
-    new_meeting_inform_template.set_metadata('type','new_meeting')
+    new_meeting_inform_template.set_metadata('performative', 'inform')
+    new_meeting_inform_template.set_metadata('type', 'new_meeting_inform')
 
     late_confirm_template = Template()
-    late_confirm_template.set_metadata('performative','confirm')
-    late_confirm_template.set_metadata('type','late')
+    late_confirm_template.set_metadata('performative', 'confirm')
+    late_confirm_template.set_metadata('type', 'late')
 
     move_meeting_propose_template = Template()
-    move_meeting_propose_template.set_metadata('performative','propose')
-    move_meeting_propose_template.set_metadata('type','move_meeting')
+    move_meeting_propose_template.set_metadata('performative', 'propose')
+    move_meeting_propose_template.set_metadata('type', 'move_meeting')
 
     move_meeting_inform_template = Template()
-    move_meeting_inform_template.set_metadata('performative','inform')
-    move_meeting_inform_template.set_metadata('type','move_meeting')
+    move_meeting_inform_template.set_metadata('performative', 'inform')
+    move_meeting_inform_template.set_metadata('type', 'move_meeting')
 
     class SendMeetRequestBehaviour(OneShotBehaviour):
-        start_date = ''
-        end_date = ''
-        temp = 20
-        participants = []
 
-        def set_meeting_details(self, start_date, end_date, temp, participants ):
+        def __init__(self):
+            super().__init__()
+            self.start_date = ''
+            self.end_date = ''
+            self.temp = 20
+            self.participants = []
+
+        def set_meeting_details(self, start_date, end_date, temp, participants):
             self.start_date = start_date
             self.end_date = end_date
             self.temp = temp
@@ -99,10 +107,7 @@ class PersonalAgent(Agent):
         async def run(self):
             msg = PersonalAgent.prepare_meet_request(self, str(uuid.uuid4()), self.start_date, self.end_date, self.temp,
                                                      self.participants, self.agent.central)
-            print('trying to send new meeting request')
             await self.send(msg)
-            print('after sending')
-            print(msg.sent)
 
     class SendLateInformBehaviour(OneShotBehaviour):
         async def run(self):
@@ -115,20 +120,21 @@ class PersonalAgent(Agent):
             if msg:
                 print(msg)
                 msg_data = json.loads(msg.body)
-                agent.personal_calendar.add_event(msg_data.get('start_date'), msg_data.get('end_date'),
-                                                  msg_data.get('temperature'))
+                self.agent.personal_calendar.add_event(msg_data['meeting_guid'],
+                                                       str_to_time(msg_data.get('start_date')),
+                                                       str_to_time(msg_data.get('end_date')),
+                                                       msg_data.get('temperature'))
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
-                self.agent.date = msg_data["datetime"]
+                self.agent.date = str_to_time(msg_data["datetime"])
                 print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
 
     class SendPreferencesInformBehaviour(OneShotBehaviour):
-        async def run(self): 
-            print('sending')
+        async def run(self):
             msg = PersonalAgent.prepare_preferences_inform(self, agent.preferred_temperature, agent.personal_room_jid)
             await self.send(msg)
 
@@ -145,12 +151,15 @@ class PersonalAgent(Agent):
     async def setup(self):
         print(str(self.jid) + " Personal agent setup")
         self.date = datetime.now()
-        
+
         datetime_inform_template = Template()
-        datetime_inform_template.set_metadata('performative','inform')
-        datetime_inform_template.set_metadata("type","datetime_inform")
+        datetime_inform_template.set_metadata('performative', 'inform')
+        datetime_inform_template.set_metadata("type", "datetime_inform")
         datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
         self.add_behaviour(datetimeBehaviour, datetime_inform_template)
+
+        self.add_behaviour(self.ReceiveNewMeetingInformBehaviour(),
+                           self.new_meeting_inform_template | self.meet_inform_template)
 
     def set_personal_room(self, personal_room_jid):
         self.personal_room_jid = personal_room_jid

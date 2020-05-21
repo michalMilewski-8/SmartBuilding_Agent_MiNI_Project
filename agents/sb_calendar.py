@@ -11,8 +11,8 @@ class Calendar:
     def delete_event(self, guid):
         self.events.pop(guid, None)
 
-    def modify_event(self, guid, start_date, end_date):
-        self.add_event(guid, start_date, end_date)
+    def modify_event(self, guid, start_date, end_date, temp=22):
+        self.add_event(guid, start_date, end_date, temp)
 
     def get_events(self):
         return self.events
@@ -96,9 +96,9 @@ class Calendar:
         temp_after = self.room_idle_temp
         date_before = datetime.datetime(1900,1,1)
         date_after = datetime.datetime(2100,1,1)
-        for start, end, temp in self.events:
-            if end < date and end > date_before:
+        for start, end, temp in self.events.values():
+            if end <= date and end > date_before:
                 temp_before = temp
-            if start > date and start < date_after:
+            if start >= date and start < date_after:
                 temp_after = temp
         return (temp_after+temp_before)/2

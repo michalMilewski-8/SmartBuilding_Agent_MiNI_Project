@@ -40,10 +40,10 @@ if __name__ == "__main__":
     room3.neighbours = ["room2@localhost", "room4@localhost"]
     room4.neighbours = ["room3@localhost"]
 
-    # centralny.add_meeting_room("room2@localhost")
-    # centralny.add_meeting_room("room1@localhost")
-    # centralny.add_meeting_room("room3@localhost")
-    # centralny.add_meeting_room("room4@localhost")
+    centralny.add_meeting_room("room2@localhost")
+    centralny.add_meeting_room("room1@localhost")
+    centralny.add_meeting_room("room3@localhost")
+    centralny.add_meeting_room("room4@localhost")
 
     centralny.start()
     personal1.start()
@@ -53,12 +53,14 @@ if __name__ == "__main__":
     room3.start()
     room4.start()
 
-    time.sleep(5)
+    time.sleep(1)
 
-    personal1.new_meeting_set(datetime(2021, 5, 21, 22, 00), datetime(2021, 5, 21, 23, 00), 22, ["personal2@localhost"])
-    print("is centralny alive "+str(centralny.is_alive()))
-    print("is personal1 alive "+str(personal1.is_alive()))
-    print("is room1 alive "+str(room1.is_alive()))
+    personal1.new_meeting_set(datetime(2021, 5, 21, 22, 00), datetime(2021, 5, 21, 23, 00), 22, [])
+    time.sleep(10)
+    personal2.new_meeting_set(datetime(2021, 5, 21, 22, 00), datetime(2021, 5, 21, 23, 00), 22, [])
+    time.sleep(0.1)
+    # personal1.new_meeting_set(datetime(2021, 5, 21, 23, 1), datetime(2021, 5, 22, 00, 00), 22, [])
+
     # wait until user interrupts with ctrl+C
     while True:
         try:
