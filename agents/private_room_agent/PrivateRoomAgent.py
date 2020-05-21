@@ -9,8 +9,7 @@ import time
 
 from datetime import datetime
 import sys
-sys.path.insert(1, 'agents')
-from energy import heat_balance, air_conditioner
+from ..energy import heat_balance, air_conditioner
 
 class PrivateRoomAgent(Agent):
 
@@ -149,36 +148,34 @@ class PrivateRoomAgent(Agent):
         self.date = datetime.now()
         
         datetime_inform_template = Template()
-        datetime_inform_template.set_metadata('performative','inform')
-        datetime_inform_template.set_metadata("type","datetime_inform")
+        datetime_inform_template.set_metadata('performative', 'inform')
+        datetime_inform_template.set_metadata("type", "datetime_inform")
         datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
-        self.add_behaviour(datetimeBehaviour,datetime_inform_template)
+        self.add_behaviour(datetimeBehaviour, datetime_inform_template)
 
         preferences_inform_template = Template()
         preferences_inform_template.set_metadata('performative', 'inform')
         preferences_inform_template.set_metadata('type', 'preferences')
         preferences = self.ReceivePreferencesInformBehaviour()
         self.add_behaviour(preferences, preferences_inform_template)
-        temperature_at_inform_template = new Template()
+        temperature_at_inform_template = Template()
         temperature_at_inform_template.set_metadata('performative', 'inform')
         temperature_at_inform_template.set_metadata('type', 'temperature_at_inform')
-        self.add_behaviour(ReceiveTemperatureAtInformBehaviour, temperature_at_inform_template)
-
-
-        send_room_data_exchange_request_behaviour = self.SendRoomDataExchangeRequestBehaviour(period = 10)
+        self.add_behaviour(self.ReceiveTemperatureAtInformBehaviour(), temperature_at_inform_template)
+        send_room_data_exchange_request_behaviour = self.SendRoomDataExchangeRequestBehaviour(period=10)
         self.add_behaviour(send_room_data_exchange_request_behaviour)
 
         room_data_exchange_request_template = Template()
-        room_data_exchange_request_template.set_metadata('performative','request')
-        room_data_exchange_request_template.set_metadata('type','room_data_exchange_request')
+        room_data_exchange_request_template.set_metadata('performative', 'request')
+        room_data_exchange_request_template.set_metadata('type', 'room_data_exchange_request')
         receive_room_data_exchange_request_behaviour = self.ReceiveRoomDataExchangeRequestBehaviour()
-        self.add_behaviour(receive_room_data_exchange_request_behaviour,room_data_exchange_request_template)
+        self.add_behaviour(receive_room_data_exchange_request_behaviour, room_data_exchange_request_template)
 
         room_data_inform_template = Template()
-        room_data_inform_template.set_metadata('performative','inform')
-        room_data_inform_template.set_metadata('type','room_data_inform')
+        room_data_inform_template.set_metadata('performative', 'inform')
+        room_data_inform_template.set_metadata('type', 'room_data_inform')
         receive_room_data_inform_behaviour = self.ReceiveRoomDataInformBehaviour()
-        self.add_behaviour(receive_room_data_inform_behaviour,room_data_inform_template)
+        self.add_behaviour(receive_room_data_inform_behaviour, room_data_inform_template)
 
 if __name__ == "__main__":
     agent = PrivateRoomAgent("private_room@localhost", "private_room")
