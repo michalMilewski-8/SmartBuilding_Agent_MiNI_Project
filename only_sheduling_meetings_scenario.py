@@ -5,17 +5,18 @@ from spade.message import Message
 from spade.template import Template
 from spade import quit_spade
 import json
-from ..agents.central_agent.CentralAgent import CentralAgent
-from ..agents.meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
-from ..agents.personal_agent.PersonalAgent import PersonalAgent
-from ..agents.technical_agent.TechnicalAgent import TechnicalAgent
-from ..agents.thermometer_agent.thermometer import Thermometer
-
+from agents.central_agent.CentralAgent import CentralAgent
+from agents.meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
+from agents.personal_agent.PersonalAgent import PersonalAgent
+from agents.technical_agent.TechnicalAgent import TechnicalAgent
+from agents.thermometer_agent.thermometer import Thermometer
 import time
+import sys
+
+
 
 if __name__ == "__main__":
     agent = PersonalAgent("personal@localhost", "personal")
-    agent.start()
 
     # wait until user interrupts with ctrl+C
     while True:
@@ -23,4 +24,3 @@ if __name__ == "__main__":
             time.sleep(1)
         except KeyboardInterrupt:
             break
-    agent.stop()

@@ -12,8 +12,8 @@ class CentralAgent(Agent):
     date = None
     meeting_room_calendars = {}
     meeting_room_neighbours = {}
-
-    room_for_meeting_choosing_responses = {}  # example { meeting_guid:{room_jid:score}}
+    meetings_info = {}  # example {"date_start": start_date, "date_end": end_date,
+    #           "temperature": temp, "scores": {room_jid:score}}
 
     @staticmethod
     def prepare_meeting_score_request(self, receivers, guid, start, end, temperature):
@@ -59,15 +59,11 @@ class CentralAgent(Agent):
                                              "temperature": temp
                                              })
             await self.send(score_request)
-        max_tries = 10
-        tries = 0
-        while max_tries != tries and agent.room_for_meeting_choosing_responses[meet_guid].count() != agent.meeting_room_calendars.keys().count():
-            tries += 1
 
-        room_date = min(agent.room_for_meeting_choosing_responses.get(meet_guid).items(), key=lambda x: x[1])
 
-        # room = min(self.meeting_room_calendars.keys(), key=lambda x: self.calculate_points(start_date, end_date,
-        #                                                                                   temp, x))
+
+        room_date = min(agent.meetings_info[meet_guid]["scores"].items(), key=lambda x: x[1])
+
         if room_date is None:
             return None
         return {'start_date': start_date, 'end_date': end_date, 'room_id': room_date[0]}
@@ -116,6 +112,8 @@ class CentralAgent(Agent):
         async def run(self):
             msg = await self.receive()
             msg_body = json.dumps(msg.body)
+            self.agent.meetings_info[msg_body.get('meeting_guid')] = {}
+
             result = self.agent.find_best_room(self, self.agent, msg_body.get('meeting_guid'),
                                                msg_body.get('start_date'),
                                                msg_body.get('end_date'), msg_body.get('temperature'))

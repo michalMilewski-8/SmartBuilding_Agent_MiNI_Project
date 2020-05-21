@@ -5,8 +5,11 @@ from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 
+import os
+cwd = os.getcwd()
+print(cwd)
 temp_data = pd.read_csv(
-    'agents/thermometer-agent/weather2019warsaw.csv',
+    'agents/thermometer_agent/weather2019warsaw.csv',
     parse_dates=['Local time in Warsaw / Okecie (airport)'],
     index_col='Local time in Warsaw / Okecie (airport)')  
 

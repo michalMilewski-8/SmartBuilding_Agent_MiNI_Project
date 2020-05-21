@@ -3,7 +3,7 @@ from spade.behaviour import CyclicBehaviour
 from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
-from sb_calendar import Calendar
+from ..sb_calendar import Calendar
 
 import json
 import uuid
