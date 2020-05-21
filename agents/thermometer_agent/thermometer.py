@@ -14,7 +14,7 @@ temp_data = pd.read_csv(
     index_col='Local time in Warsaw / Okecie (airport)')  
 
 class Thermometer(Agent):
-    def setup(self):       
+    async def setup(self):
         template = Template()
         template.set_metadata('performative', 'request')
         template.set_metadata('type', 'outdoor_temperature')

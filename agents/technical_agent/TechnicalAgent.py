@@ -32,7 +32,7 @@ class TechnicalAgent(Agent):
         super().__init__(jid, password)
         self.power = 0
 
-    def setup(self):
+    async def setup(self):
         room_inform_template = Template()
         room_inform_template.set_metadata('performative', 'inform')
         room_inform_template.set_metadata('type', 'energy_usage_inform')

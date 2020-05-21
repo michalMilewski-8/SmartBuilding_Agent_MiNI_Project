@@ -16,13 +16,14 @@ class PersonalAgent(Agent):
     personal_room_jid = ""
     preferred_temperature = 20
     personal_calendar = Calendar()
+    central = ""
 
     @staticmethod
     def prepare_meet_request(self, guid, start_date, end_date, temperature, participants, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'request')
-        msg.set_metadata('type', 'meet')
-        msg.body = json.dumps({'meeting_guid': guid, 'start_date': start_date, 'end_date': end_date,
+        msg.set_metadata('type', 'meet_request')
+        msg.body = json.dumps({'meeting_guid': guid, 'start_date': str(start_date), 'end_date': str(end_date),
                                'temperature': temperature, 'participants': participants})
         return msg
 
@@ -57,10 +58,15 @@ class PersonalAgent(Agent):
         msg.set_metadata('type', 'refuse_proposal')
         msg.body = json.dumps({'meeting_guid': guid})
         return msg
+
+    def new_meeting_set(self,start_date, end_date, temp, participants):
+        new_meeting_behav = self.SendMeetRequestBehaviour()
+        new_meeting_behav.set_meeting_details(start_date, end_date, temp, participants)
+        self.add_behaviour(new_meeting_behav)
     
     meet_inform_template = Template()
-    meet_inform_template.set_metadata('performative','inform')
-    meet_inform_template.set_metadata('type','meet')
+    meet_inform_template.set_metadata('performative', 'inform')
+    meet_inform_template.set_metadata('type', 'meet_inform')
 
     new_meeting_inform_template = Template()
     new_meeting_inform_template.set_metadata('performative','inform')
@@ -79,22 +85,38 @@ class PersonalAgent(Agent):
     move_meeting_inform_template.set_metadata('type','move_meeting')
 
     class SendMeetRequestBehaviour(OneShotBehaviour):
-        async def run(self):
-            msg = PersonalAgent.prepare_meet_request(self, uuid.uuid4(), 'start_date', 'end_date', 20,
-                                                     ['AA@AA', 'bb@bb'], 'central_agent')
-            await self.send(msg)
+        start_date = ''
+        end_date = ''
+        temp = 20
+        participants = []
 
-    class SendLateInformBehaviour(CyclicBehaviour):
+        def set_meeting_details(self, start_date, end_date, temp, participants ):
+            self.start_date = start_date
+            self.end_date = end_date
+            self.temp = temp
+            self.participants = participants
+
+        async def run(self):
+            msg = PersonalAgent.prepare_meet_request(self, str(uuid.uuid4()), self.start_date, self.end_date, self.temp,
+                                                     self.participants, self.agent.central)
+            print('trying to send new meeting request')
+            await self.send(msg)
+            print('after sending')
+            print(msg.sent)
+
+    class SendLateInformBehaviour(OneShotBehaviour):
         async def run(self):
             msg = PersonalAgent.prepare_late_inform(self, 'arrival_date', 'central_agent')
             await self.send(msg)
 
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            msg_data = json.loads(msg.body)
-            agent.personal_calendar.add_event(msg_data.get('start_date'), msg_data.get('end_date'),
-                                              msg_data.get('temperature'))
+            msg = await self.receive(timeout=1)
+            if msg:
+                print(msg)
+                msg_data = json.loads(msg.body)
+                agent.personal_calendar.add_event(msg_data.get('start_date'), msg_data.get('end_date'),
+                                                  msg_data.get('temperature'))
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -112,12 +134,12 @@ class PersonalAgent(Agent):
 
     class ReceiveMoveMeetingProposeBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
+            msg = await self.receive(timeout=1)
             msg_data = json.loads(msg.body)
 
     class ReceiveMoveMeetingInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
+            msg = await self.receive(timeout=1)
             msg_data = json.loads(msg.body)
 
     async def setup(self):
