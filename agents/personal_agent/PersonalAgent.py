@@ -33,11 +33,13 @@ class PersonalAgent(Agent):
         return msg
 
     @staticmethod
-    def prepare_late_inform(self, arrival_datetime, receivers):
+    def prepare_late_inform(self, arrival_datetime, guid, force_move, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
         msg.set_metadata('type', 'late')
-        msg.body = json.dumps({'arrival_datetime': time_to_str(arrival_datetime)})
+        msg.body = json.dumps({'arrival_datetime': time_to_str(arrival_datetime),
+                               'meeting_guid': guid,
+                               'force_move': force_move})
         return msg
 
     @staticmethod
