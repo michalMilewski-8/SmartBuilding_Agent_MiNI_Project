@@ -71,6 +71,11 @@ class PersonalAgent(Agent):
         new_meeting_behav.set_meeting_details(start_date, end_date, temp, participants)
         self.add_behaviour(new_meeting_behav)
 
+    def meeting_late(self, arrival_datetime, meeting_guid, force_move):
+        late_inform_behav = self.SendLateInformBehaviour()
+        late_inform_behav.set_details(arrival_datetime, meeting_guid, force_move)
+        self.add_behaviour(late_inform_behav)
+
     meet_inform_template = Template()
     meet_inform_template.set_metadata('performative', 'inform')
     meet_inform_template.set_metadata('type', 'meet_inform')
@@ -112,8 +117,21 @@ class PersonalAgent(Agent):
             await self.send(msg)
 
     class SendLateInformBehaviour(OneShotBehaviour):
+        def __init__(self):
+            super().__init__()
+            self.arrival_datetime = ''
+            self.meeting_guid = ''
+            self.force_move = False
+
+        def set_details(self, arrival_datetime, meeting_guid, force_move):
+            self.arrival_datetime = arrival_datetime
+            self.meeting_guid = meeting_guid
+            self.force_move = force_move
+
         async def run(self):
-            msg = PersonalAgent.prepare_late_inform(self, 'arrival_date', 'central_agent')
+            msg = PersonalAgent.prepare_late_inform(self, self.arrival_datetime,
+                                self.meeting_guid, self.force_move, self.agent.central)
+            print(msg)
             await self.send(msg)
 
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
