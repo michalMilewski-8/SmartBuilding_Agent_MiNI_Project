@@ -12,10 +12,16 @@ from ..time_conversion import time_to_str, str_to_time
 class CentralAgent(Agent):
     date = None
     meeting_room_calendars = {}
-    meeting_room_neighbours = {}
+    # meeting_room_neighbours = {}
     meetings_info = {}  # example {"date_start": start_date, "date_end": end_date,
 
     #           "temperature": temp, "scores": {room_jid:score}}
+    def __init__(self, jid, password):
+        super().__init__(jid, password)
+        date = None
+        meeting_room_calendars = {}
+        # meeting_room_neighbours = {}
+        meetings_info = {}
 
     @staticmethod
     def prepare_meeting_score_request(self, receivers, guid, start, end, temperature):
@@ -63,12 +69,12 @@ class CentralAgent(Agent):
                                              })
             await behav.send(score_request)
 
-    def calculate_points(self, start_date, end_date, temp, room):
-        result = 0
-        result += self.meeting_room_calendars[room].calculate_points(start_date, end_date, temp)
-        for neigh in self.meeting_room_neighbours[room]:
-            result += self.meeting_room_calendars[neigh].calculate_points_as_neighbour(start_date, end_date, temp)
-        return result
+    # def calculate_points(self, start_date, end_date, temp, room):
+    #     result = 0
+    #     result += self.meeting_room_calendars[room].calculate_points(start_date, end_date, temp)
+    #     for neigh in self.meeting_room_neighbours[room]:
+    #         result += self.meeting_room_calendars[neigh].calculate_points_as_neighbour(start_date, end_date, temp)
+    #     return result
 
     async def negotiate(self, behav, msg_guid, best_start_date, best_end_date,
                         receiver):
@@ -188,6 +194,11 @@ class CentralAgent(Agent):
                                         })
             response.to = str(meeting['room_id'])
             await self.send(response)
+
+            self.agent.meeting_room_calendars[meeting['room_id']].add_event(self.meeting_guid,
+                                                                            meeting['start_date'],
+                                                                            meeting['end_date'],
+                                                                            meeting['temperature'])
 
             organizer_response = Message(to=meeting["organizer_jid"])
             organizer_response.set_metadata('performative', 'inform')
