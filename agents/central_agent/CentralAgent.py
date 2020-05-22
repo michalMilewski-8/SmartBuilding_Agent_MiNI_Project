@@ -139,11 +139,14 @@ class CentralAgent(Agent):
                 msg_body = json.loads(msg.body)
                 new_start_date = str_to_time(msg_body['arrival_datetime'])
                 guid = msg_body['meeting_guid']
-                if msg_body['force_move']:
-                    self.agent.meetings_info[msg_body["meeting_guid"]]["scores"] = {}
+                if msg_body['force_move'] == True:
+                    print("DEBUG")
                     old_start_date = self.agent.meetings_info[guid]['start_date']
                     old_end_date = self.agent.meetings_info[guid]['end_date']
                     new_end_date = old_end_date + (new_start_date - old_start_date)
+                    self.agent.meetings_info[msg_body["meeting_guid"]]["scores"] = {}
+                    self.agent.meetings_info[msg_body["meeting_guid"]]["start_date"] = new_start_date
+                    self.agent.meetings_info[msg_body["meeting_guid"]]["end_date"] = new_end_date
                     await self.agent.find_best_room(self, guid, new_start_date, new_end_date,
                                                     self.agent.meetings_info[guid]['temperature'])
                 else:
