@@ -8,7 +8,7 @@ from spade.template import Template
 from spade import quit_spade
 import json
 from agents.central_agent.CentralAgent import CentralAgent
-from agents.meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
+from agents.private_room_agent.PrivateRoomAgent import PrivateRoomAgent
 from agents.personal_agent.PersonalAgent import PersonalAgent
 from agents.technical_agent.TechnicalAgent import TechnicalAgent
 from agents.thermometer_agent.thermometer import Thermometer
@@ -47,7 +47,12 @@ if __name__ == "__main__":
     room3.start()
     room4.start()
 
-    time.sleep(1)
+    time.sleep(5)
+
+    personal1.set_preffered_temperature(20)
+    personal2.set_preffered_temperature(19)
+    personal3.set_preffered_temperature(25)
+    personal4.set_preffered_temperature(23)	
 
     # wait until user interrupts with ctrl+C
     while True:
@@ -56,7 +61,6 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             break
 
-    centralny.stop()
     personal1.stop()
     personal2.stop()
     personal3.stop()

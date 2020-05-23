@@ -126,7 +126,7 @@ class MeetingRoomAgent(Agent):
                 print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(
                     msg_data["temperature"]))
 
-    class SendRoomDataExchangeRequestBehaviour(PeriodicBehaviour):
+    class SendRoomDataExchangeRequestBehaviour(OneShotBehaviour):
         async def run(self):
             for neighbour in self.agent.neighbours:
                 if neighbour < str(self.agent.jid):
@@ -157,6 +157,9 @@ class MeetingRoomAgent(Agent):
                 self.agent.ac_power += heat_needed / self.agent.TODO_czas_do_spotkania_w_sekundach / self.agent.ac_performance
                 b = self.agent.SendEnergyUsageInformBehaviour()
                 self.agent.add_behaviour(b)
+                b2 = self.SendRoomDataExchangeRequestBehaviour()
+                self.add_behaviour(b2)
+
 
     class SendEnergyUsageInformBehaviour(OneShotBehaviour):
         async def run(self):
@@ -244,9 +247,6 @@ class MeetingRoomAgent(Agent):
         meeting_score_request_template.set_metadata('performative', 'request')
         meeting_score_request_template.set_metadata('type', 'meeting_score_request')
         self.add_behaviour(self.ReceiveMeetingScoreRequestBehaviour(), meeting_score_request_template)
-
-        send_room_data_exchange_request_behaviour = self.SendRoomDataExchangeRequestBehaviour(period=10)
-        self.add_behaviour(send_room_data_exchange_request_behaviour)
 
         room_data_exchange_request_template = Template()
         room_data_exchange_request_template.set_metadata('performative', 'request')
