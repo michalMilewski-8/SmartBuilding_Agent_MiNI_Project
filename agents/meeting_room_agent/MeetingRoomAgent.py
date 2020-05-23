@@ -146,10 +146,11 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
                 self.agent.date = new_time
                 #print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed =  new_time - last_time
-                b = self.agent.SendEnergyUsageInformBehaviour()
-                b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
-                self.agent.add_behaviour(b)
-                
+                # TO DZIALA JAK COS, TRZEBA TYLKO UZUPELNIC TECHNICZNEGO (patrz implementacja behaviour lub private room)
+                # b = self.agent.SendEnergyUsageInformBehaviour()
+                # b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                # self.agent.add_behaviour(b)
+
                 if time_elapsed.seconds > 0:
                     energy_used = self.agent.ac_power * time_elapsed.seconds #tak, time_elapsed.seconds dziala tak jak chcemy
                     heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
