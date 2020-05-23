@@ -2,7 +2,7 @@
 
 ## Cel projektu:
 
-Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spotkan oraz minimalizacje zuzycia energi przeznaczonej na ogrzewanie pomieszczen.
+Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spotkań oraz minimalizację zużycia energii przeznaczonej na ogrzewanie pomieszczeń.
 
 ## Agenci
 
@@ -60,7 +60,7 @@ Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spot
 #### Agent "zegarek"
 
  - Rola: Agent "zegarek"
- - Opis: Agent synchronizujący czas.
+ - Opis: Agent synchronizujący czas. Potrzebny do symulowania przyspieszonego czasu.
  - Protokoły i Aktywności: InformowanieODacieIGodzinie
  - Uprawnienia: Brak.
  - Zadania:
@@ -276,24 +276,6 @@ meeting_score_inform = {
     "score": 55
 }
 ```
-## Plan działania
+## Scenariusze
 
- - Implementacja dotychczas opracowanych założeń.
-
-# Raport 2.5
-
-## Zmiany
-
- Odłożyliśmy protokół związany z negocjacją na boczny plan, zajmiemy się nim w przyszłości.
-
-## Postępy
-
- Zaimplementowaliśmy wysyłanie i odbieranie wiadomości (bez głębszego analizowania zawartości przychodzących wiadomości) w poszczególnych agentach.
-
-## W toku
-
- Rozpoczęliśmy prace nad niezbędną logiką związaną z wysyłaniem i obieraniem wiadomości.
-
-## Plany
-
- Po zaimplementowaniu podstawowej logiki przygotujemy scenariusze, na których chcielibyśmy zaprezentować nasz system, dodamy wymagane funkcjonalności i przygotujemy te scenariusze.
+ - 
