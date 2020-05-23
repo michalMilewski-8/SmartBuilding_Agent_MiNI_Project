@@ -13,9 +13,18 @@ from ..energy import heat_balance, air_conditioner
 
 class PrivateRoomAgent(Agent):
 
-    preferred_temperature = 20
-    outdoor_agent = "outdoor_agent"
-    energy_agent = 'energy_agent'
+    def __init__(self, jid, password):
+        super().__init__(jid, password)
+        self.personal_calendar = Calendar()
+        self.score_request_dict = {}
+        self.central = ""
+        self.neighbours = []
+	self.people = []
+        self.temperature = 20
+        self.temperatures = {}
+	self.preferred_temperature = 20
+    	self.outdoor_agent = ""
+    	self.energy_agent = ""
 
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
