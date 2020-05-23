@@ -10,12 +10,12 @@ Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spot
 
  - Rola: Agent personalny
  - Opis: Agent reprezentujący pracownika. Odpowiadający za umawianie spotkań. Informujący o ewentualnych spóźnieniach. Przechowuje kalendarz użytkownika.
- - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniu, NegocjacjaTerminuSpotkania, PreferencjePracownika, InformowanieODacieIGodzinie
+ - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, NegocjacjaTerminuSpotkania, PreferencjePracownika, InformowanieODacieIGodzinie, InformowanieOSpóźnieniuDoBiura
  - Uprawnienia: Odczyt i modyfikacje osobistego kalendarza
  - Zadania:
 	  + Cykl życia:
-	    + EGZYSTENCJA = PreferencjePracownika.(UmawianieSpotkań | InformowanieODacieIGodzinie)ω
-	    + UmawianieSpotkań = (UmawianieSpotkania[NegocjacjaTerminuSpotkania])|InformowanieOSpóźnieniu
+	    + EGZYSTENCJA = PreferencjePracownika.(UmawianieSpotkań | InformowanieODacieIGodzinie | InformowanieOSpóźnieniuDoBiura)ω
+	    + UmawianieSpotkań = (UmawianieSpotkania[NegocjacjaTerminuSpotkania])|InformowanieOSpóźnieniuNaSpotkanie
 	
 #### Agent pokoju spotkań
 
@@ -31,21 +31,21 @@ Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spot
 
  - Rola: Agent pokoju osobistego
  - Opis: Agent reprezentujący pokój osobisty. Przechowuje własny kalendarz.
- - Protokoły i Aktywności: WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, PreferencjePracownika, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
+ - Protokoły i Aktywności: WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, PreferencjePracownika, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania, InformowanieOSpóźnieniuDoBiura
  - Uprawnienia: Odczyt i modyfikacje kalendarza pokoju. Dostęp do termometru i klimatyzacji.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
+       EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania | InformowanieOSpóźnieniuDoBiura) ω
 
 #### Agent centralny planujący
 
  - Rola: Agent centralny planujący
  - Opis: Agent przydzielający pokoje do spotkań. Przechowuje własny kalendarz.
- - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniu, NegocjacjaTerminuSpotkania, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
+ - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, NegocjacjaTerminuSpotkania, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
  - Uprawnienia: Odczyt i modyfikacje kalendarza.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniu | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
+       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniuNaSpotkanie | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
 
 #### Agent "energetyk"
 
@@ -80,12 +80,13 @@ Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spot
 ## Protkoły
  - UmawianieSpotkania,
  - WymianaTemperaturyMiędzyPokojami,
- - InformowanieOSpóźnieniu, 
+ - InformowanieOSpóźnieniuNaSpotkanie, 
+ - InformowanieOSpóźnieniuDoBiura, 
  - InformowanieODacieIGodzinie,
  - InformowanieOZużytejEnergii, 
  - PreferencjePracownika, 
  - ZapytanieOTemperaturęNaZewnątrz,
- - NegocjacjaTerminuSpotkania
+ - NegocjacjaTerminuSpotkania,
  - OcenaMożliwościPrzeprowadzeniaSpotkania
 
 #### UmawianieSpotkania
@@ -141,9 +142,9 @@ room_data_inform = {
 ```
 
 
-#### InformowanieOSpóźnieniu
+#### InformowanieOSpóźnieniuNaSpotkanie
 ##### Diagram
-![](diagrams_img/InformowanieOSpóźnieniu.svg)
+![](diagrams_img/InformowanieOSpóźnieniuNaSpotkanie.svg)
 
 ##### Przykładowe wiadomości
 ```Python
@@ -157,6 +158,16 @@ late_inform = {
 ```Python
 late_confirm = {
     "confirmed": true
+}
+```
+#### InformowanieOSpóźnieniuDoBiura
+##### Diagram
+![](diagrams_img/InformowanieOSpóźnieniuDoBiura.svg)
+
+##### Przykładowe wiadomości
+```Python
+job_late_inform = {
+    "arrival_datetime": "16-04-2020 11:00"
 }
 ```
 
