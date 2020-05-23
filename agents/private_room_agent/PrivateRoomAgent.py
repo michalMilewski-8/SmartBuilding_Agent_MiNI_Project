@@ -28,6 +28,7 @@ class PrivateRoomAgent(Agent):
         self.preferred_temperatures = {}
         self.outdoor_agent = ""
         self.energy_agent = ""
+        self.date = datetime.now()
 
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
@@ -135,15 +136,15 @@ class PrivateRoomAgent(Agent):
 
     class ReceivePreferencesInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
+            msg = await self.receive(timeout = 1)
             if msg:
                 msg_data = (json.loads(msg.body))
                 if "optimal_temperature" in msg_data:
                     print("Preferred temperature: {}".format(msg_data.get("optimal_temperature")))
                     self.agent.preferred_temperatures[str(msg.sender)] = msg_data.get("optimal_temperature")
                     sum_n = 0
-                    for temperature in self.agent.preferred_temperatures:
-                        sum_n = sum_n + temperature
+                    for agent_jid in self.agent.preferred_temperatures:
+                        sum_n = sum_n + self.agent.preferred_temperatures[agent_jid]
                     self.agent.preferred_temperature = sum_n / len(self.agent.preferred_temperatures)
                     print("Temperature set: {}".format(self.agent.preferred_temperature))
 
@@ -154,12 +155,11 @@ class PrivateRoomAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 temp = self.agent.personal_calendar.get_temperature_at(msg_data["date"])
-                msg2 = PrivateRoomAgent.prepare_temperature_at_inform(msg.sender, msg_data["request_guid"], temp)
+                msg2 = PrivateRoomAgent.prepare_temperature_at_inform(msg.sender, msg_data["request_guid"], self.agent.pregferred_temperature)
                 await self.send(msg2)
 
     async def setup(self):
         print(str(self.jid) + " Private room agent setup")
-        self.date = datetime.now()
         
         datetime_inform_template = Template()
         datetime_inform_template.set_metadata('performative', 'inform')
@@ -169,14 +169,15 @@ class PrivateRoomAgent(Agent):
 
         preferences_inform_template = Template()
         preferences_inform_template.set_metadata('performative', 'inform')
-        preferences_inform_template.set_metadata('type', 'preferences')
-        preferences = self.ReceivePreferencesInformBehaviour()
-        self.add_behaviour(preferences, preferences_inform_template)
+        preferences_inform_template.set_metadata('type', 'preferences_inform')
+        preferences_behaviour = self.ReceivePreferencesInformBehaviour()
+        self.add_behaviour(preferences_behaviour, preferences_inform_template)
 
-        temperature_at_inform_template = Template()
-        temperature_at_inform_template.set_metadata('performative', 'inform')
-        temperature_at_inform_template.set_metadata('type', 'temperature_at_inform')
-        self.add_behaviour(self.ReceiveTemperatureAtInformBehaviour(), temperature_at_inform_template)
+        temperature_at_request_template = Template()
+        temperature_at_request_template.set_metadata('performative', 'request')
+        temperature_at_request_template.set_metadata('type', 'temperature_at_request')
+        receive_temperature_at_request_behaviour = self.ReceiveTemperatureAtRequestBehaviour()
+        self.add_behaviour(receive_temperature_at_request_behaviour, temperature_at_request_template)
 
         room_data_exchange_request_template = Template()
         room_data_exchange_request_template.set_metadata('performative', 'request')

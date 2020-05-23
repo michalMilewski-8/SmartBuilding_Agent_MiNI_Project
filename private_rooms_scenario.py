@@ -28,10 +28,10 @@ if __name__ == "__main__":
     room3 = PrivateRoomAgent("room3@localhost", "room")
     room4 = PrivateRoomAgent("room4@localhost", "room")
 
-    personal1.room = "room1@localhost"
-    personal2.room = "room2@localhost"
-    personal3.room = "room3@localhost"
-    personal4.room = "room4@localhost"
+    personal1.set_personal_room("room1@localhost")
+    personal2.set_personal_room("room2@localhost")
+    personal3.set_personal_room("room3@localhost")
+    personal4.set_personal_room("room4@localhost")
 
     room1.people = ["personal1@localhost"]
     room2.people = ["personal2@localhost"]
@@ -49,10 +49,10 @@ if __name__ == "__main__":
 
     time.sleep(5)
 
-    personal1.set_preffered_temperature(20)
-    personal2.set_preffered_temperature(19)
-    personal3.set_preffered_temperature(25)
-    personal4.set_preffered_temperature(23)	
+    personal1.set_preferred_temperature(20)
+    personal2.set_preferred_temperature(19)
+    personal3.set_preferred_temperature(25)
+    personal4.set_preferred_temperature(23)	
 
     # wait until user interrupts with ctrl+C
     while True:

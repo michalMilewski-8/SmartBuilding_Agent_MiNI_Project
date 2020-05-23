@@ -47,7 +47,7 @@ class PersonalAgent(Agent):
     def prepare_preferences_inform(self, optimal_temperature, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
-        msg.set_metadata('type', 'preferences')
+        msg.set_metadata('type', 'preferences_inform')
         msg.body = json.dumps({'optimal_temperature': optimal_temperature})
         return msg
 
@@ -156,7 +156,7 @@ class PersonalAgent(Agent):
 
     class SendPreferencesInformBehaviour(OneShotBehaviour):
         async def run(self):
-            msg = PersonalAgent.prepare_preferences_inform(self, agent.preferred_temperature, agent.personal_room_jid)
+            msg = PersonalAgent.prepare_preferences_inform(self, self.agent.preferred_temperature, self.agent.room)
             await self.send(msg)
 
     class ReceiveMoveMeetingProposeBehaviour(CyclicBehaviour):
@@ -183,7 +183,7 @@ class PersonalAgent(Agent):
                            self.new_meeting_inform_template | self.meet_inform_template)
 
     def set_personal_room(self, personal_room_jid):
-        self.personal_room_jid = personal_room_jid
+        self.room = personal_room_jid
 
     def set_preferred_temperature(self, preferred_temp):
         self.preferred_temperature = preferred_temp
