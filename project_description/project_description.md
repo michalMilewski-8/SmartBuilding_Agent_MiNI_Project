@@ -290,3 +290,7 @@ meeting_score_inform = {
 ## Scenariusze
 
  - 
+
+## Stan prac
+
+Kończymy implementację podstawowych scenariuszy wymienionych wyżej. Planujemy jeszcze stworzyć kompleksowy scenariusz przedstawiający jednocześnie wszystkie aspekty systemu i przygotować kompletną dokumentację. W naszych planach te zadania będą etapami kończącymi projekt.
