@@ -21,6 +21,7 @@ class PersonalAgent(Agent):
         self.personal_calendar = Calendar()
         self.central = ""
         self.room = "" #id pokoju prywatnego
+        self.date = datetime.now()
 
     @staticmethod
     def prepare_meet_request(self, guid, start_date, end_date, temperature, participants, receivers):
@@ -203,7 +204,6 @@ class PersonalAgent(Agent):
 
     async def setup(self):
         print(str(self.jid) + " Personal agent setup")
-        self.date = datetime.now()
 
         datetime_inform_template = Template()
         datetime_inform_template.set_metadata('performative', 'inform')

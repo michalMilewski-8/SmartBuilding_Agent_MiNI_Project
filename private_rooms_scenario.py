@@ -19,6 +19,8 @@ import sys
 
 
 if __name__ == "__main__":
+    start_date = datetime(2020,5,23,3,0)
+
     personal1 = PersonalAgent("personal1@localhost", "personal")
     personal2 = PersonalAgent("personal2@localhost", "personal")
     personal3 = PersonalAgent("personal3@localhost", "personal")
@@ -32,8 +34,8 @@ if __name__ == "__main__":
     clock = ClockAgent("clock@localhost", "clock")
     clock.agents_jids = ["room1@localhost", "room2@localhost", "room3@localhost", "room4@localhost",
                         "personal1@localhost", "personal2@localhost", "personal3@localhost", "personal4@localhost"]
-    clock.last_date_virtual = datetime(2020,5,23,3,0)
-    clock.time_speed = 10
+    clock.last_date_virtual = start_date
+    clock.time_speed = 200
 
     personal1.set_personal_room("room1@localhost")
     personal2.set_personal_room("room2@localhost")
@@ -44,6 +46,25 @@ if __name__ == "__main__":
     room2.add_personal_agent("personal2@localhost")
     room3.add_personal_agent("personal3@localhost")
     room4.add_personal_agent("personal4@localhost")
+    
+    room1.date = start_date
+    room2.date = start_date
+    room3.date = start_date
+    room4.date = start_date
+    personal1.date = start_date
+    personal2.date = start_date
+    personal3.date = start_date
+    personal4.date = start_date
+
+    room1.temperature = 15
+    room2.temperature = 15
+    room3.temperature = 15
+    room4.temperature = 20
+
+    room1.neighbours = {"room2@localhost": {"wall_size": 20, "temperature": room2.temperature}}
+    room2.neighbours = {"room1@localhost": {"wall_size": 20, "temperature": room1.temperature}, "room3@localhost": {"wall_size": 30, "temperature": room3.temperature}}
+    room3.neighbours = {"room2@localhost": {"wall_size": 30, "temperature": room2.temperature}, "room4@localhost": {"wall_size": 20, "temperature": room4.temperature}}
+    room4.neighbours = {"room3@localhost": {"wall_size": 20, "temperature": room3.temperature}}
 
     personal1.start()
     personal2.start()
@@ -54,8 +75,7 @@ if __name__ == "__main__":
     room3.start()
     room4.start()
 
-
-    time.sleep(5)
+    time.sleep(5) #czekanie na uruchomienie sie wszystkich agentow wyzej
 
     clock.start()
     personal1.set_preferred_temperature(20)
