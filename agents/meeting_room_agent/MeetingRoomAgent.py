@@ -158,7 +158,7 @@ class MeetingRoomAgent(Agent):
                 b = self.agent.SendEnergyUsageInformBehaviour()
                 self.agent.add_behaviour(b)
                 b2 = self.SendRoomDataExchangeRequestBehaviour()
-                self.add_behaviour(b2)
+                self.agent.add_behaviour(b2)
 
 
     class SendEnergyUsageInformBehaviour(OneShotBehaviour):
