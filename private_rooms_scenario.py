@@ -54,6 +54,10 @@ if __name__ == "__main__":
     personal3.set_preferred_temperature(25)
     personal4.set_preferred_temperature(23)	
 
+    time.sleep(2)
+
+    personal1.job_late(datetime(2020,5,23,10,15))
+
     # wait until user interrupts with ctrl+C
     while True:
         try:

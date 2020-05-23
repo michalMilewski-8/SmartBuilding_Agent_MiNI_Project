@@ -12,6 +12,7 @@ from datetime import datetime
 import sys
 from ..energy import heat_balance, air_conditioner
 from ..sb_calendar import Calendar
+from ..time_conversion import time_to_str, str_to_time
 
 class PrivateRoomAgent(Agent):
 
@@ -30,6 +31,7 @@ class PrivateRoomAgent(Agent):
         self.energy_agent = ""
         self.date = datetime.now()
         self.coming_at = {}
+        self.first_guy_coming_at = self.date.replace(hour = 7, minute = 0, second = 0)
 
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
@@ -124,6 +126,21 @@ class PrivateRoomAgent(Agent):
                 b2 = self.SendRoomDataExchangeRequestBehaviour()
                 self.agent.add_behaviour(b2)
 
+    class ReceiveJobLateInformBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                print(msg_data)
+                new_time = str_to_time(msg_data['arrival_datetime'])
+                sender_jid = str(msg.sender)
+                self.agent.coming_at[sender_jid] = new_time
+                first_coming_at = new_time
+                for agent_jid in self.agent.coming_at:
+                    if self.agent.coming_at[agent_jid] < self.agent.first_guy_coming_at:
+                        first_coming_at = self.agent.coming_at[agent_jid]
+                self.agent.first_guy_coming_at = first_coming_at
+
     class SendEnergyUsageInformBehaviour(CyclicBehaviour):
         async def run(self):
             energy = self.agent.ac_power * self.agent.time_elapsed
@@ -192,9 +209,16 @@ class PrivateRoomAgent(Agent):
         receive_room_data_inform_behaviour = self.ReceiveRoomDataInformBehaviour()
         self.add_behaviour(receive_room_data_inform_behaviour, room_data_inform_template)
 
+        job_late_inform_template = Template()
+        job_late_inform_template.set_metadata('performative', 'inform')
+        job_late_inform_template.set_metadata('type', 'job_late_inform')
+        job_late_inform_behaviour = self.ReceiveJobLateInformBehaviour()
+        self.add_behaviour(job_late_inform_behaviour, job_late_inform_template)
+
     def add_personal_agent(self, personal_agent_jid):
         self.people.append(personal_agent_jid)
-        self.coming_at[personal_agent_jid] = 7
+        self.coming_at[personal_agent_jid] = self.date.replace(hour = 7, minute = 0, second = 0)
+        self.first_guy_coming_at = self.date.replace(hour = 7, minute = 0, second = 0)
 
 if __name__ == "__main__":
     agent = PrivateRoomAgent("private_room@localhost", "private_room")

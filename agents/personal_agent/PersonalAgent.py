@@ -17,7 +17,6 @@ class PersonalAgent(Agent):
 
     def __init__(self, jid, password):
         super().__init__(jid, password)
-        self.personal_room_jid = ""
         self.preferred_temperature = 20
         self.personal_calendar = Calendar()
         self.central = ""
@@ -67,6 +66,14 @@ class PersonalAgent(Agent):
         msg.body = json.dumps({'meeting_guid': guid})
         return msg
 
+    @staticmethod
+    def prepare_job_late_inform(self, date, receivers):
+        msg = Message(to=receivers)
+        msg.set_metadata('performative', 'inform')
+        msg.set_metadata('type', 'job_late_inform')
+        msg.body = json.dumps({'arrival_datetime': time_to_str(date)})
+        return msg
+
     def new_meeting_set(self, start_date, end_date, temp, participants):
         new_meeting_behav = self.SendMeetRequestBehaviour()
         new_meeting_behav.set_meeting_details(start_date, end_date, temp, participants)
@@ -76,6 +83,19 @@ class PersonalAgent(Agent):
         late_inform_behav = self.SendLateInformBehaviour()
         late_inform_behav.set_details(arrival_datetime, meeting_guid, force_move)
         self.add_behaviour(late_inform_behav)
+
+    def job_late(self, arrival_datetime):
+        job_late_inform_behav = self.SendJobLateInformBehaviour()
+        job_late_inform_behav.set_details(arrival_datetime)
+        self.add_behaviour(job_late_inform_behav)
+
+    def set_personal_room(self, personal_room_jid):
+        self.room = personal_room_jid
+
+    def set_preferred_temperature(self, preferred_temp):
+        self.preferred_temperature = preferred_temp
+        preferences = self.SendPreferencesInformBehaviour()
+        self.add_behaviour(preferences)
 
     meet_inform_template = Template()
     meet_inform_template.set_metadata('performative', 'inform')
@@ -135,6 +155,19 @@ class PersonalAgent(Agent):
             print(msg)
             await self.send(msg)
 
+    class SendJobLateInformBehaviour(OneShotBehaviour):
+        def __init__(self):
+            super().__init__()
+            self.arrival_datetime = ''
+
+        def set_details(self, arrival_datetime):
+            self.arrival_datetime = arrival_datetime
+
+        async def run(self):
+            msg = PersonalAgent.prepare_job_late_inform(self, self.arrival_datetime, self.agent.room)
+            print(msg)
+            await self.send(msg)
+
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive(timeout=1)
@@ -181,14 +214,6 @@ class PersonalAgent(Agent):
 
         self.add_behaviour(self.ReceiveNewMeetingInformBehaviour(),
                            self.new_meeting_inform_template | self.meet_inform_template)
-
-    def set_personal_room(self, personal_room_jid):
-        self.room = personal_room_jid
-
-    def set_preferred_temperature(self, preferred_temp):
-        self.preferred_temperature = preferred_temp
-        preferences = self.SendPreferencesInformBehaviour()
-        self.add_behaviour(preferences)
 
 
 if __name__ == "__main__":
