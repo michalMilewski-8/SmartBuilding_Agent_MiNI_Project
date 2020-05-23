@@ -29,6 +29,7 @@ class PrivateRoomAgent(Agent):
         self.outdoor_agent = ""
         self.energy_agent = ""
         self.date = datetime.now()
+        self.coming_at = {}
 
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
@@ -190,6 +191,10 @@ class PrivateRoomAgent(Agent):
         room_data_inform_template.set_metadata('type', 'room_data_inform')
         receive_room_data_inform_behaviour = self.ReceiveRoomDataInformBehaviour()
         self.add_behaviour(receive_room_data_inform_behaviour, room_data_inform_template)
+
+    def add_personal_agent(self, personal_agent_jid):
+        self.people.append(personal_agent_jid)
+        self.coming_at[personal_agent_jid] = 7
 
 if __name__ == "__main__":
     agent = PrivateRoomAgent("private_room@localhost", "private_room")

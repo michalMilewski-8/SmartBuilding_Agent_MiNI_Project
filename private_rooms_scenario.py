@@ -33,10 +33,10 @@ if __name__ == "__main__":
     personal3.set_personal_room("room3@localhost")
     personal4.set_personal_room("room4@localhost")
 
-    room1.people = ["personal1@localhost"]
-    room2.people = ["personal2@localhost"]
-    room3.people = ["personal3@localhost"]
-    room4.people = ["personal4@localhost"]
+    room1.add_personal_agent("personal1@localhost")
+    room2.add_personal_agent("personal2@localhost")
+    room3.add_personal_agent("personal3@localhost")
+    room4.add_personal_agent("personal4@localhost")
 
     personal1.start()
     personal2.start()
