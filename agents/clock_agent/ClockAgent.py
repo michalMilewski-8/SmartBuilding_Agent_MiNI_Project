@@ -14,10 +14,15 @@ from ..time_conversion import time_to_str, str_to_time
 
 class ClockAgent(Agent):
 
-    async def setup(self):
+    def __init__(self, jid, password):
+        super().__init__(jid, password)
         self.last_date_virtual = datetime.now()
         self.last_date_real = datetime.now()
-        print(self.agents_jids)
+        self.agents_jids = []
+        self.time_speed = 60
+
+    async def setup(self):
+        print('Clock setup')
         send_date_behaviour = self.SendDate(period = 5)
         self.add_behaviour(send_date_behaviour)
 
@@ -25,11 +30,11 @@ class ClockAgent(Agent):
         async def run(self): 
             real_time_difference = datetime.now() - self.agent.last_date_real
             self.agent.last_date_real = datetime.now()
-            virtual_time_difference = real_time_difference * 60
+            virtual_time_difference = real_time_difference * self.agent.time_speed
             virtual_date = self.agent.last_date_virtual + virtual_time_difference
             self.agent.last_date_virtual = virtual_date
             for agent in self.agent.agents_jids:
-                print(str(self.agent.jid) + " sending date to " + agent)
+                #print(str(self.agent.jid) + " sending date to " + agent)
                 msg = Message(to = agent)
                 msg.set_metadata("performative", "inform")
                 msg.set_metadata("type", "datetime_inform")

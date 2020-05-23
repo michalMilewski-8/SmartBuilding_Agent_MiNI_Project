@@ -24,6 +24,7 @@ class MeetingRoomAgent(Agent):
         self.neighbours = []
         self.temperature = 20
         self.temperatures = {}
+        self.date = datetime.now()
 
     @staticmethod
     def prepare_room_data_exchange_request(temperature, receivers):
@@ -141,11 +142,11 @@ class MeetingRoomAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 new_time = str_to_time(msg_data['datetime'])
+                last_time = self.agent.date
                 self.agent.date = new_time
                 print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
-                self.agent.time_elapsed = new_time - self.agent.last_time
+                self.agent.time_elapsed = new_time - last_time
                 self.agent.energy_used = self.agent.ac_power * self.agent.time_elapsed.seconds
-                self.agent.last_time = new_time
                 heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
                     self.agent.time_elapsed, self.agent.temperature, self.agent.room_capacity,
                     self.agent.temperatures, self.agent.ac_power)
@@ -259,8 +260,6 @@ class MeetingRoomAgent(Agent):
         room_data_inform_template.set_metadata('type', 'room_data_inform')
         receive_room_data_inform_behaviour = self.ReceiveRoomDataInformBehaviour()
         self.add_behaviour(receive_room_data_inform_behaviour, room_data_inform_template)
-        self.date = datetime.now()
-        self.last_time = datetime.now()
 
         datetime_inform_template = Template()
         datetime_inform_template.set_metadata('performative', 'inform')

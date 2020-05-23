@@ -8,7 +8,7 @@ from spade.agent import Agent
 from spade.behaviour import PeriodicBehaviour
 from spade.message import Message
 from spade.template import Template
-from clock_agent.clock_agent import ClockAgent
+from clock_agent.ClockAgent import ClockAgent
 from meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
 from private_room_agent.PrivateRoomAgent import PrivateRoomAgent
 from personal_agent.PersonalAgent import PersonalAgent

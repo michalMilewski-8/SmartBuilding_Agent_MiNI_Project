@@ -107,31 +107,31 @@ class PrivateRoomAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 new_time = str_to_time(msg_data['datetime'])
+                last_time = self.agent.date
                 self.agent.date = new_time
                 print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
-                self.agent.time_elapsed =  new_time - self.agent.last_time
-                self.agent.energy_used = self.agent.ac_power * self.agent.time_elapsed.seconds
-                self.agent.last_time = new_time
-                heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
-                self.agent.time_elapsed, self.agent.temperature, self.agent.room_capacity, 
-                self.agent.temperatures, self.agent.ac_power)
-                self.agent.temperature -= temperature_lost
-                #tu ustawianie temperatury
-                heat_needed = air_conditioner(self.agent.temperature, 
-                self.agent.TODO_temperatura_ktora_ma_byc, self.agent.room_capacity)
-                heat_needed += heat_lost
-                self.agent.ac_power += heat_needed / self.agent.TODO_czas_do_spotkania_w_sekundach / self.agent.ac_performance
-                b = self.agent.SendEnergyUsageInformBehaviour()
-                self.agent.add_behaviour(b)
-                b2 = self.SendRoomDataExchangeRequestBehaviour()
-                self.agent.add_behaviour(b2)
+                # na razie nie uzywam
+                # self.agent.time_elapsed =  new_time - last_time
+                # self.agent.energy_used = self.agent.ac_power * self.agent.time_elapsed.seconds
+                # heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
+                # self.agent.time_elapsed, self.agent.temperature, self.agent.room_capacity, 
+                # self.agent.temperatures, self.agent.ac_power)
+                # self.agent.temperature -= temperature_lost
+                # #tu ustawianie temperatury
+                # heat_needed = air_conditioner(self.agent.temperature, 
+                # self.agent.TODO_temperatura_ktora_ma_byc, self.agent.room_capacity)
+                # heat_needed += heat_lost
+                # self.agent.ac_power += heat_needed / self.agent.TODO_czas_do_spotkania_w_sekundach / self.agent.ac_performance
+                # b = self.agent.SendEnergyUsageInformBehaviour()
+                # self.agent.add_behaviour(b)
+                # b2 = self.SendRoomDataExchangeRequestBehaviour()
+                # self.agent.add_behaviour(b2)
 
     class ReceiveJobLateInformBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive(timeout = 1)
             if msg:
                 msg_data = json.loads(msg.body)
-                print(msg_data)
                 new_time = str_to_time(msg_data['arrival_datetime'])
                 sender_jid = str(msg.sender)
                 self.agent.coming_at[sender_jid] = new_time

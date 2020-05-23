@@ -12,6 +12,7 @@ from agents.private_room_agent.PrivateRoomAgent import PrivateRoomAgent
 from agents.personal_agent.PersonalAgent import PersonalAgent
 from agents.technical_agent.TechnicalAgent import TechnicalAgent
 from agents.thermometer_agent.thermometer import Thermometer
+from agents.clock_agent.ClockAgent import ClockAgent
 import time
 import sys
 
@@ -27,6 +28,12 @@ if __name__ == "__main__":
     room2 = PrivateRoomAgent("room2@localhost", "room")
     room3 = PrivateRoomAgent("room3@localhost", "room")
     room4 = PrivateRoomAgent("room4@localhost", "room")
+
+    clock = ClockAgent("clock@localhost", "clock")
+    clock.agents_jids = ["room1@localhost", "room2@localhost", "room3@localhost", "room4@localhost",
+                        "personal1@localhost", "personal2@localhost", "personal3@localhost", "personal4@localhost"]
+    clock.last_date_virtual = datetime(2020,5,23,3,0)
+    clock.time_speed = 10
 
     personal1.set_personal_room("room1@localhost")
     personal2.set_personal_room("room2@localhost")
@@ -47,8 +54,10 @@ if __name__ == "__main__":
     room3.start()
     room4.start()
 
+
     time.sleep(5)
 
+    clock.start()
     personal1.set_preferred_temperature(20)
     personal2.set_preferred_temperature(19)
     personal3.set_preferred_temperature(25)
@@ -73,3 +82,4 @@ if __name__ == "__main__":
     room2.stop()
     room3.stop()
     room4.stop()
+    clock.stop()

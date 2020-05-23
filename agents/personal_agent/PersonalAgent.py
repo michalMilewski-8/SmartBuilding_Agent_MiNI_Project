@@ -165,7 +165,6 @@ class PersonalAgent(Agent):
 
         async def run(self):
             msg = PersonalAgent.prepare_job_late_inform(self, self.arrival_datetime, self.agent.room)
-            print(msg)
             await self.send(msg)
 
     class ReceiveNewMeetingInformBehaviour(CyclicBehaviour):
