@@ -49,7 +49,7 @@ class MeetingRoomAgent(Agent):
     def prepare_energy_usage_inform(energy, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
-        msg.set_metadata('type', 'energy_usage')
+        msg.set_metadata('type', 'energy_usage_inform')
         msg.body = json.dumps({'energy_used_since_last_message': energy})
         return msg
 
@@ -116,7 +116,7 @@ class MeetingRoomAgent(Agent):
                 temperature = msg_data["temperature"]
                 self.agent.neighbours[str(msg.sender)]["temperature"] = temperature
                 #print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
-                msg2 = PrivateRoomAgent.prepare_room_data_inform(self, self.agent.temperature, str(msg.sender))
+                msg2 = MeetingRoomAgent.prepare_room_data_inform(self, self.agent.temperature, str(msg.sender))
                 #print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
                 await self.send(msg2)
 
@@ -132,7 +132,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             for neighbour in self.agent.neighbours:
                 if neighbour < str(self.agent.jid):
-                    msg = PrivateRoomAgent.prepare_room_data_exchange_request(self, self.agent.temperature, neighbour)
+                    msg = MeetingRoomAgent.prepare_room_data_exchange_request(self, self.agent.temperature, neighbour)
                     #print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
                     await self.send(msg)
 
@@ -146,6 +146,10 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
                 self.agent.date = new_time
                 #print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed =  new_time - last_time
+                b = self.agent.SendEnergyUsageInformBehaviour()
+                b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                self.agent.add_behaviour(b)
+                
                 if time_elapsed.seconds > 0:
                     energy_used = self.agent.ac_power * time_elapsed.seconds #tak, time_elapsed.seconds dziala tak jak chcemy
                     heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
@@ -162,19 +166,21 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
                     #    self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
                     #else:
                     #    self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
-                    
-                    # b = self.agent.SendEnergyUsageInformBehaviour()
-                    # ustawienie zuzytej energii w wiadomosci, jako abs(ac_power)
-                    # self.agent.add_behaviour(b)
                 b2 = self.agent.SendRoomDataExchangeRequestBehaviour()
                 self.agent.add_behaviour(b2)
 
 
 
     class SendEnergyUsageInformBehaviour(OneShotBehaviour):
+        def __init__(self):
+            super().__init__()
+            self.energy = 0
+
+        def set_energy(self, energy):
+            self.energy = energy
+
         async def run(self):
-            energy = self.agent.ac_power * self.agent.time_elapsed
-            msg = MeetingRoomAgent.prepare_energy_usage_inform(energy, 'energy_agent')
+            msg = self.agent.prepare_energy_usage_inform(self, self.energy, self.agent.energy_agent)
             await self.send(msg)
 
     class SendOutdoorTemperatureRequestBehaviour(CyclicBehaviour):

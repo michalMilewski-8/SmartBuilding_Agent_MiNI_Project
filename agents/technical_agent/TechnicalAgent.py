@@ -43,9 +43,11 @@ class TechnicalAgent(Agent):
 
         async def run(self):
             msg = await self.receive()
-            msg_body = json.loads(msg.body);
-            if 'energy_used_since_last_message' in msg_body:
-                self.agent.add_to_power(msg_body['energy_used_since_last_message']);
+            if msg:
+                msg_body = json.loads(msg.body)
+                if 'energy_used_since_last_message' in msg_body:
+                    self.agent.add_to_power(msg_body['energy_used_since_last_message']);
+                    print(self.agent.power)
 
     # maybe useful - not deleting
     class GetRoomPowerBehaviour(PeriodicBehaviour):

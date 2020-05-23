@@ -31,6 +31,8 @@ if __name__ == "__main__":
     room3 = PrivateRoomAgent("room3@localhost", "room")
     room4 = PrivateRoomAgent("room4@localhost", "room")
 
+    technical = TechnicalAgent("technical@localhost", "technical")
+
     clock = ClockAgent("clock@localhost", "clock")
     clock.agents_jids = ["room1@localhost", "room2@localhost", "room3@localhost", "room4@localhost",
                         "personal1@localhost", "personal2@localhost", "personal3@localhost", "personal4@localhost"]
@@ -46,6 +48,10 @@ if __name__ == "__main__":
     room2.add_personal_agent("personal2@localhost")
     room3.add_personal_agent("personal3@localhost")
     room4.add_personal_agent("personal4@localhost")
+    room1.energy_agent = "technical@localhost"
+    room2.energy_agent = "technical@localhost"
+    room3.energy_agent = "technical@localhost"
+    room4.energy_agent = "technical@localhost"
     
     room1.date = start_date
     room2.date = start_date
@@ -74,6 +80,7 @@ if __name__ == "__main__":
     room2.start()
     room3.start()
     room4.start()
+    technical.start()
 
     time.sleep(5) #czekanie na uruchomienie sie wszystkich agentow wyzej
 
@@ -103,3 +110,4 @@ if __name__ == "__main__":
     room3.stop()
     room4.stop()
     clock.stop()
+    technical.stop()

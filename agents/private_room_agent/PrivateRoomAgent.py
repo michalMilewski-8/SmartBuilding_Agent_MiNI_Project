@@ -55,7 +55,7 @@ class PrivateRoomAgent(Agent):
     def prepare_energy_usage_inform(self, energy, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
-        msg.set_metadata('type', 'energy_usage')
+        msg.set_metadata('type', 'energy_usage_inform')
         msg.body = json.dumps({'energy_used_since_last_message': energy})
         return msg
 
@@ -113,6 +113,10 @@ class PrivateRoomAgent(Agent):
                 self.agent.date = new_time
                 #print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed =  new_time - last_time
+                b = self.agent.SendEnergyUsageInformBehaviour()
+                b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                self.agent.add_behaviour(b)
+                
                 if time_elapsed.seconds > 0:
                     energy_used = self.agent.ac_power * time_elapsed.seconds #tak, time_elapsed.seconds dziala tak jak chcemy
                     heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
@@ -127,9 +131,6 @@ class PrivateRoomAgent(Agent):
                         self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
                     else:
                         self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
-                    # b = self.agent.SendEnergyUsageInformBehaviour()
-                    # ustawienie zuzytej energii w wiadomosci, jako abs(ac_power)
-                    # self.agent.add_behaviour(b)
                 b2 = self.agent.SendRoomDataExchangeRequestBehaviour()
                 self.agent.add_behaviour(b2)
 
@@ -147,10 +148,16 @@ class PrivateRoomAgent(Agent):
                         first_coming_at = self.agent.coming_at[agent_jid]
                 self.agent.first_guy_coming_at = first_coming_at
 
-    class SendEnergyUsageInformBehaviour(CyclicBehaviour):
+    class SendEnergyUsageInformBehaviour(OneShotBehaviour):
+        def __init__(self):
+            super().__init__()
+            self.energy = 0
+
+        def set_energy(self, energy):
+            self.energy = energy
+
         async def run(self):
-            energy = self.agent.ac_power * self.agent.time_elapsed
-            msg = agent.prepare_energy_usage_inform(self, energy, agent.energy_agent)
+            msg = self.agent.prepare_energy_usage_inform(self, self.energy, self.agent.energy_agent)
             await self.send(msg)
 
     class SendOutdoorTemperatureRequestBehaviour(CyclicBehaviour):
