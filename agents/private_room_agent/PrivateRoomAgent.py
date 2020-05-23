@@ -11,6 +11,7 @@ import time
 from datetime import datetime
 import sys
 from ..energy import heat_balance, air_conditioner
+from ..sb_calendar import Calendar
 
 class PrivateRoomAgent(Agent):
 
