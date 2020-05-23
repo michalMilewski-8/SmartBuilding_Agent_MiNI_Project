@@ -10,6 +10,7 @@ from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
 import asyncio
+from ..time_conversion import time_to_str, str_to_time
 
 class ClockAgent(Agent):
 
@@ -32,7 +33,7 @@ class ClockAgent(Agent):
                 msg = Message(to = agent)
                 msg.set_metadata("performative", "inform")
                 msg.set_metadata("type", "datetime_inform")
-                msg.body = json.dumps({'datetime': str(virtual_date)})
+                msg.body = json.dumps({'datetime': time_to_str(virtual_date)})
                 await self.send(msg)
 
 if __name__ == "__main__":

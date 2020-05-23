@@ -140,7 +140,7 @@ class MeetingRoomAgent(Agent):
             msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
-                new_time = datetime.strptime(msg_data['datetime'], "%Y-%m-%d %H:%M")
+                new_time = str_to_time(msg_data['datetime'])
                 self.agent.date = new_time
                 print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 self.agent.time_elapsed = new_time - self.agent.last_time
