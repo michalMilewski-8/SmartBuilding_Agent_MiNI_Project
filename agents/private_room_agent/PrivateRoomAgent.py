@@ -1,6 +1,7 @@
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.behaviour import PeriodicBehaviour
+from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
 from spade import quit_spade
@@ -24,8 +25,8 @@ class PrivateRoomAgent(Agent):
         self.temperatures = {}
         self.preferred_temperature = 20
         self.preferred_temperatures = {}
-    	self.outdoor_agent = ""
-    	self.energy_agent = ""
+        self.outdoor_agent = ""
+        self.energy_agent = ""
 
     @staticmethod
     def prepare_room_data_exchange_request(self, temperature, receivers):
@@ -143,7 +144,7 @@ class PrivateRoomAgent(Agent):
                     for temperature in self.agent.preferred_temperatures:
                         sum_n = sum_n + temperature
                     self.agent.preferred_temperature = sum_n / len(self.agent.preferred_temperatures)
-                    print("Temperature set: {}".format(self.agent.preferred_temperature)))
+                    print("Temperature set: {}".format(self.agent.preferred_temperature))
 
 
     class ReceiveTemperatureAtRequestBehaviour(CyclicBehaviour):

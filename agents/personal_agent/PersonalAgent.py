@@ -21,7 +21,7 @@ class PersonalAgent(Agent):
         self.preferred_temperature = 20
         self.personal_calendar = Calendar()
         self.central = ""
-	self.room = "" #id pokoju prywatnego
+        self.room = "" #id pokoju prywatnego
 
     @staticmethod
     def prepare_meet_request(self, guid, start_date, end_date, temperature, participants, receivers):
