@@ -156,8 +156,22 @@ late_inform = {
 ```
 
 ```Python
-late_confirm = {
-    "confirmed": true
+new_meeting_inform = {
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
+    "temperature": 30,
+    "room_id": 21,
+    "organizer_jid": "aaa@lll"
+}
+```
+
+```Python
+meet_inform = {
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
+    "room_id": 21
 }
 ```
 #### InformowanieOSpóźnieniuDoBiura
@@ -289,4 +303,10 @@ meeting_score_inform = {
 ```
 ## Scenariusze
 
- - 
+ #### Spóźnienie agenta personalnego
+
+ Scenariusz ma na celu pokazanie poprawnego działania przesuwania istniejącego już spotkania z powodu spóźnienia organizatora. W scenariuszu tworzony jest agent personalny, cztery pokoje spotkań oraz agent centralny. Agent personalny tworzy nowe spotkanie, a po pewnym czasie informuje o spóźnieniu. Gdy informuje o spoźnieniu za pierwszym razem wymusza zmianę spotkania na nowe, które rozpocznie się o na nowo określonej godzinie i będzie trwało tyle samo czasu ile stare spotkanie. Za drugim razem nie ma wymuszenia, zatem godzina rozpoczęcia spotkania spotkania ulega zmianie, ale godzina zakończenia już nie. W obu przypadkach agenci pokojów spotkań oraz agent personalny otrzymują wiadomość od agenta centralnego jak o nowym spotkaniu.
+
+## Stan prac
+
+Kończymy implementację podstawowych scenariuszy wymienionych wyżej. Planujemy jeszcze stworzyć kompleksowy scenariusz przedstawiający jednocześnie wszystkie aspekty systemu i przygotować kompletną dokumentację. W naszych planach te zadania będą etapami kończącymi projekt.
