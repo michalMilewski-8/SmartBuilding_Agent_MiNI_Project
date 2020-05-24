@@ -275,7 +275,11 @@ meeting_score_inform = {
  #### Spóźnienie agenta personalnego
 
  Scenariusz ma na celu pokazanie poprawnego działania przesuwania istniejącego już spotkania z powodu spóźnienia organizatora. W scenariuszu tworzony jest agent personalny, cztery pokoje spotkań oraz agent centralny. Agent personalny tworzy nowe spotkanie, a po pewnym czasie informuje o spóźnieniu. Gdy informuje o spoźnieniu za pierwszym razem wymusza zmianę spotkania na nowe, które rozpocznie się o na nowo określonej godzinie i będzie trwało tyle samo czasu ile stare spotkanie. Za drugim razem nie ma wymuszenia, zatem godzina rozpoczęcia spotkania spotkania ulega zmianie, ale godzina zakończenia już nie. W obu przypadkach agenci pokojów spotkań oraz agent personalny otrzymują wiadomość od agenta centralnego jak o nowym spotkaniu.
- 
+
+ #### Umawianie nowych spotkań
+
+ Scenariusz ma na celu pokazanie poprawnego działania umieszczania spotkań w różnych pokojach z myślą o zaoszczędzeniu energii. W scenariuszu tworzeni są czterej agenci pokojów spotkań, dwaj agenci personalni oraz agent centralny. Jeden z agentów personalnych tworzy nowe spotkanie. Następnie wysyła zapytanie do centralnego o nowe spotkanie. Centralny odpytuje wszystkie pokoje spotkań o ich ocenę kosztu danego spotkania. W tym przypadku każdy pokój ma tę samą ocenę, więc wybrany zostaje pierwszy. Następnie drugi agent personalny tworzy kolejne spotkanie w tym samym czasie. Centralny odpytuje wszytkie pokoje i ustawia spotkanie w pokoju sąsiednim z tym pierwszym (pierwszy zwraca koszt jako None, ponieważ jest zajęty w tym czasie). Następnie kolejne spotkanie jest umawiane zaraz po wcześniejszych spotkanich. Centralny po odpytaniu wszystkich pokoi wybiera pokój w którym się odbywało pierwsze spotkanie, jako pokój z najmnijeszym kosztem.
+
 
 ## Stan prac
 
