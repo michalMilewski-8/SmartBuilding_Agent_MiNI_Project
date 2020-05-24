@@ -10,12 +10,12 @@ Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spot
 
  - Rola: Agent personalny
  - Opis: Agent reprezentujący pracownika. Odpowiadający za umawianie spotkań. Informujący o ewentualnych spóźnieniach. Przechowuje kalendarz użytkownika.
- - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, NegocjacjaTerminuSpotkania, PreferencjePracownika, InformowanieODacieIGodzinie, InformowanieOSpóźnieniuDoBiura
+ - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, PreferencjePracownika, InformowanieODacieIGodzinie, InformowanieOSpóźnieniuDoBiura
  - Uprawnienia: Odczyt i modyfikacje osobistego kalendarza
  - Zadania:
 	  + Cykl życia:
 	    + EGZYSTENCJA = PreferencjePracownika.(UmawianieSpotkań | InformowanieODacieIGodzinie | InformowanieOSpóźnieniuDoBiura)ω
-	    + UmawianieSpotkań = (UmawianieSpotkania[NegocjacjaTerminuSpotkania])|InformowanieOSpóźnieniuNaSpotkanie
+	    + UmawianieSpotkań = (UmawianieSpotkania)|InformowanieOSpóźnieniuNaSpotkanie
 	
 #### Agent pokoju spotkań
 
@@ -40,16 +40,16 @@ Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spot
 #### Agent centralny planujący
 
  - Rola: Agent centralny planujący
- - Opis: Agent przydzielający pokoje do spotkań. Przechowuje własny kalendarz.
- - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, NegocjacjaTerminuSpotkania, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
+ - Opis: Agent przydzielający pokoje do spotkań. Przechowuje kalendarze pokojów spotkań.
+ - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
  - Uprawnienia: Odczyt i modyfikacje kalendarza.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniuNaSpotkanie | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
+       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniuNaSpotkanie | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
 
-#### Agent "energetyk"
+#### Agent techniczny
 
- - Rola: Agent "energetyk"
+ - Rola: Agent techniczny
  - Opis: Agent zbierający informacje o ilości zużytej energii.
  - Protokoły i Aktywności: InformowanieOZużytejEnergii
  - Uprawnienia: Brak.
@@ -86,7 +86,6 @@ Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spot
  - InformowanieOZużytejEnergii, 
  - PreferencjePracownika, 
  - ZapytanieOTemperaturęNaZewnątrz,
- - NegocjacjaTerminuSpotkania,
  - OcenaMożliwościPrzeprowadzeniaSpotkania
 
 #### UmawianieSpotkania
@@ -120,7 +119,8 @@ meet_inform = {
     "meeting_guid": "AWDH5435-89oij-JIKI",
     "start_date": "23-01-2020 12:23",
     "end_date":"23-01-2020 14:23",
-    "room_id": 21
+    "room_id": 21,
+    "temperature": 30
 }
 ```
 
@@ -171,7 +171,8 @@ meet_inform = {
     "meeting_guid": "AWDH5435-89oij-JIKI",
     "start_date": "23-01-2020 12:23",
     "end_date":"23-01-2020 14:23",
-    "room_id": 21
+    "room_id": 21,
+    "temperature": 30
 }
 ```
 #### InformowanieOSpóźnieniuDoBiura
@@ -235,40 +236,6 @@ outdoor_temperature_inform = {
 }
 ```
 
-#### NegocjacjaTerminuSpotkania
-##### Diagram
-![](diagrams_img/NegocjacjaTerminuSpotkania.svg)
-
-##### Przykładowe wiadomości
-```Python
-move_meeting_propose = {
-    "meeting_guid": "AWDH5435-89oij-JIKI",
-    "start_date": "23-01-2020 12:23",
-    "end_date":"23-01-2020 14:23"
-}
-```
-
-```Python
-accept_proposal = {
-    "meeting_guid": "AWDH5435-89oij-JIKI"
-}
-```
-
-```Python
-refuse_proposal = {
-    "meeting_guid": "AWDH5435-89oij-JIKI"
-}
-```
-
-```Python
-move_meeting_inform = {
-    "meeting_guid": "AWDH5435-89oij-JIKI",
-    "new_start_date": "23-01-2020 12:23",
-    "new_end_date": "23-01-2020 14:23",
-    "delete_meeting": true
-}
-```
-
 #### Ocena możliwości przeprowadzenia spotkania
 ##### Diagram
 ![](diagrams_img/OcenaMożliwościPrzeprowadzeniaSpotkania.svg)
@@ -308,7 +275,8 @@ meeting_score_inform = {
  #### Spóźnienie agenta personalnego
 
  Scenariusz ma na celu pokazanie poprawnego działania przesuwania istniejącego już spotkania z powodu spóźnienia organizatora. W scenariuszu tworzony jest agent personalny, cztery pokoje spotkań oraz agent centralny. Agent personalny tworzy nowe spotkanie, a po pewnym czasie informuje o spóźnieniu. Gdy informuje o spoźnieniu za pierwszym razem wymusza zmianę spotkania na nowe, które rozpocznie się o na nowo określonej godzinie i będzie trwało tyle samo czasu ile stare spotkanie. Za drugim razem nie ma wymuszenia, zatem godzina rozpoczęcia spotkania spotkania ulega zmianie, ale godzina zakończenia już nie. W obu przypadkach agenci pokojów spotkań oraz agent personalny otrzymują wiadomość od agenta centralnego jak o nowym spotkaniu.
+ 
 
 ## Stan prac
 
-Kończymy implementację podstawowych scenariuszy wymienionych wyżej. Planujemy jeszcze stworzyć kompleksowy scenariusz przedstawiający jednocześnie wszystkie aspekty systemu i przygotować kompletną dokumentację. W naszych planach te zadania będą etapami kończącymi projekt.
+Kończymy implementację podstawowych scenariuszy wymienionych wyżej (i działają). Planujemy jeszcze stworzyć kompleksowy scenariusz przedstawiający jednocześnie wszystkie aspekty systemu. W naszych planach te zadania będą etapami kończącymi projekt.
