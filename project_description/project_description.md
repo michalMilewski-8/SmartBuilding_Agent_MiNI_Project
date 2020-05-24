@@ -272,10 +272,13 @@ meeting_score_inform = {
 ```
 ## Scenariusze
 
- #### Spóźnienie agenta personalnego
+ #### Spóźnienie agenta personalnego (na spotkanie)
 
  Scenariusz ma na celu pokazanie poprawnego działania przesuwania istniejącego już spotkania z powodu spóźnienia organizatora. W scenariuszu tworzony jest agent personalny, cztery pokoje spotkań oraz agent centralny. Agent personalny tworzy nowe spotkanie, a po pewnym czasie informuje o spóźnieniu. Gdy informuje o spoźnieniu za pierwszym razem wymusza zmianę spotkania na nowe, które rozpocznie się o na nowo określonej godzinie i będzie trwało tyle samo czasu ile stare spotkanie. Za drugim razem nie ma wymuszenia, zatem godzina rozpoczęcia spotkania spotkania ulega zmianie, ale godzina zakończenia już nie. W obu przypadkach agenci pokojów spotkań oraz agent personalny otrzymują wiadomość od agenta centralnego jak o nowym spotkaniu.
  
+ #### Spóźnianie agenta personalnego (do biura)
+ 
+ Scenariusz ma na celu pokazanie opóźniania ogrzewania pokoju osobistego w przypadku spóźniania się jego użytkowników. Tworzeni są agenci personalni oraz agenci ich pokojów osobistych. Agenci personalni informują o spóźnieniu do biura. W "dobrym" scenariuszu ogrzewanie pokoju jest wtedy włączanie z odpowiednim opóźnieniem. "Zły" scenariusz nie reaguje na spóźnienie pracownika i zawsze uruchamia ogrzewanie o tej samej porze.
 
 ## Stan prac
 
