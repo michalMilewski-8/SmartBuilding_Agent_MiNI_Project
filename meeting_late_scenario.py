@@ -11,7 +11,7 @@ from agents.central_agent.CentralAgent import CentralAgent
 from agents.meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
 from agents.personal_agent.PersonalAgent import PersonalAgent
 from agents.technical_agent.TechnicalAgent import TechnicalAgent
-from agents.thermometer_agent.thermometer import Thermometer
+from agents.thermometer_agent.Thermometer import Thermometer
 import time
 import sys
 

@@ -4,6 +4,7 @@ from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
 from spade.message import Message
 from spade.template import Template
+from ..time_conversion import time_to_str, str_to_time
 
 import os
 cwd = os.getcwd()
@@ -15,6 +16,7 @@ temp_data = pd.read_csv(
 
 class Thermometer(Agent):
     async def setup(self):
+        print("Thermometer setup")
         template = Template()
         template.set_metadata('performative', 'request')
         template.set_metadata('type', 'outdoor_temperature')
@@ -23,16 +25,16 @@ class Thermometer(Agent):
 
     class SendTemperature(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive()
-            date_dict = json.loads(msg.body)
-            date = date_dict['date']
-            temp = self.agent.get_temperature(pd.Timestamp(date))
-
-            temp_msg = msg.make_reply()
-            msg.body = json.dumps({'temperature': temp})
-            msg.set_metadata('performative', 'inform')
-            msg.set_metadata('type', 'outdoor_temperature_response')
-            await self.send(temp_msg)
+            msg = await self.receive(timeout = 1)
+            if(msg):
+                date_dict = json.loads(msg.body)
+                date = str_to_time(date_dict['date'])
+                temp = self.agent.get_temperature(pd.Timestamp(date))
+                temp_msg = msg.make_reply()
+                temp_msg.body = json.dumps({'temperature': temp})
+                temp_msg.set_metadata('performative', 'inform')
+                temp_msg.set_metadata('type', 'outdoor_temperature_inform')
+                await self.send(temp_msg)
 
 
     def get_temperature(self, date):       

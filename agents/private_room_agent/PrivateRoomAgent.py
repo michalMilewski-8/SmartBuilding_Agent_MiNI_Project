@@ -34,9 +34,11 @@ class PrivateRoomAgent(Agent):
         self.ac_power = 0
         self.room_capacity = 200
         self.ac_performance = 1
+        self.outdoor_wall = 20
+        self.outdoor_temperature = self.temperature
 
     @staticmethod
-    def prepare_room_data_exchange_request(self, temperature, receivers):
+    def prepare_room_data_exchange_request(temperature, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'request')
         msg.set_metadata('type', 'room_data_exchange_request')
@@ -44,7 +46,7 @@ class PrivateRoomAgent(Agent):
         return msg
 
     @staticmethod
-    def prepare_room_data_inform(self, temperature, receivers):
+    def prepare_room_data_inform(temperature, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
         msg.set_metadata('type', 'room_data_inform')
@@ -52,7 +54,7 @@ class PrivateRoomAgent(Agent):
         return msg
 
     @staticmethod
-    def prepare_energy_usage_inform(self, energy, receivers):
+    def prepare_energy_usage_inform(energy, receivers):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
         msg.set_metadata('type', 'energy_usage_inform')
@@ -60,15 +62,15 @@ class PrivateRoomAgent(Agent):
         return msg
 
     @staticmethod
-    def prepare_outdoor_temperature_request(self, receivers):
+    def prepare_outdoor_temperature_request(receivers, date):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'request')
         msg.set_metadata('type', 'outdoor_temperature')
-        msg.body = json.dumps({})
+        msg.body = json.dumps({'date': time_to_str(date)})
         return msg
 
     @staticmethod
-    def prepare_temperature_at_inform(self, receivers, guid, temperature):
+    def prepare_temperature_at_inform(receivers, guid, temperature):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'inform')
         msg.set_metadata('type', 'temperature_at_inform')
@@ -83,7 +85,7 @@ class PrivateRoomAgent(Agent):
                 temperature = msg_data["temperature"]
                 self.agent.neighbours[str(msg.sender)]["temperature"] = temperature
                 #print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
-                msg2 = PrivateRoomAgent.prepare_room_data_inform(self, self.agent.temperature, str(msg.sender))
+                msg2 = PrivateRoomAgent.prepare_room_data_inform(self.agent.temperature, str(msg.sender))
                 #print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
                 await self.send(msg2)
 
@@ -99,7 +101,7 @@ class PrivateRoomAgent(Agent):
         async def run(self):
             for neighbour in self.agent.neighbours:
                 if neighbour < str(self.agent.jid):
-                    msg = PrivateRoomAgent.prepare_room_data_exchange_request(self, self.agent.temperature, neighbour)
+                    msg = PrivateRoomAgent.prepare_room_data_exchange_request(self.agent.temperature, neighbour)
                     #print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
                     await self.send(msg)
 
@@ -121,7 +123,8 @@ class PrivateRoomAgent(Agent):
                     energy_used = self.agent.ac_power * time_elapsed.seconds #tak, time_elapsed.seconds dziala tak jak chcemy
                     heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
                     time_elapsed, self.agent.temperature, self.agent.room_capacity, 
-                    self.agent.neighbours, self.agent.ac_power)
+                    self.agent.neighbours, self.agent.ac_power,
+                    self.agent.outdoor_wall, self.agent.outdoor_temperature)
                     print(str(self.agent.jid) + " temp " +str(self.agent.temperature))
                     self.agent.temperature -= temperature_lost
                     heat_needed = air_conditioner(self.agent.temperature, 
@@ -133,6 +136,8 @@ class PrivateRoomAgent(Agent):
                         self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
                 b2 = self.agent.SendRoomDataExchangeRequestBehaviour()
                 self.agent.add_behaviour(b2)
+                b3 = self.agent.SendOutdoorTemperatureRequestBehaviour()
+                self.agent.add_behaviour(b3)
 
     class ReceiveJobLateInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -157,12 +162,12 @@ class PrivateRoomAgent(Agent):
             self.energy = energy
 
         async def run(self):
-            msg = self.agent.prepare_energy_usage_inform(self, self.energy, self.agent.energy_agent)
+            msg = self.agent.prepare_energy_usage_inform(self.energy, self.agent.energy_agent)
             await self.send(msg)
 
-    class SendOutdoorTemperatureRequestBehaviour(CyclicBehaviour):
+    class SendOutdoorTemperatureRequestBehaviour(OneShotBehaviour):
         async def run(self):
-            msg = agent.prepare_outdoor_temperature_request(self, agent.outdoor_agent)
+            msg = self.agent.prepare_outdoor_temperature_request(self.agent.outdoor_agent, self.agent.date)
             await self.send(msg)
 
     class ReceivePreferencesInformBehaviour(CyclicBehaviour):
@@ -188,6 +193,13 @@ class PrivateRoomAgent(Agent):
                 temp = self.agent.personal_calendar.get_temperature_at(msg_data["date"])
                 msg2 = PrivateRoomAgent.prepare_temperature_at_inform(msg.sender, msg_data["request_guid"], self.agent.pregferred_temperature)
                 await self.send(msg2)
+
+    class ReceiveOutdoorTemperatureInformBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout = 1)
+            if msg:
+                msg_data = json.loads(msg.body)
+                self.agent.outdoor_temperature = msg_data["temperature"]
 
     async def setup(self):
         print(str(self.jid) + " Private room agent setup")
@@ -227,6 +239,12 @@ class PrivateRoomAgent(Agent):
         job_late_inform_template.set_metadata('type', 'job_late_inform')
         job_late_inform_behaviour = self.ReceiveJobLateInformBehaviour()
         self.add_behaviour(job_late_inform_behaviour, job_late_inform_template)
+
+        outdoor_temperature_inform_template = Template()
+        outdoor_temperature_inform_template.set_metadata('performative', 'inform')
+        outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature_inform')
+        outdoor_temperature_inform_behaviour = self.ReceiveOutdoorTemperatureInformBehaviour()
+        self.add_behaviour(outdoor_temperature_inform_behaviour, outdoor_temperature_inform_template)
 
     def add_personal_agent(self, personal_agent_jid):
         self.people.append(personal_agent_jid)

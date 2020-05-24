@@ -224,12 +224,14 @@ preferences_inform = {
 
 ##### Przykładowe wiadomości
 ```Python
-outdoor_temperature_request = {}
+outdoor_temperature_request = {
+    "date": "23-01-2020 12:23"
+}
 ```
 
 ```Python
 outdoor_temperature_inform = {
-    "outdoor_temperature": 14
+    "temperature": 14
 }
 ```
 

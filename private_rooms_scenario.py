@@ -11,7 +11,7 @@ from agents.central_agent.CentralAgent import CentralAgent
 from agents.private_room_agent.PrivateRoomAgent import PrivateRoomAgent
 from agents.personal_agent.PersonalAgent import PersonalAgent
 from agents.technical_agent.TechnicalAgent import TechnicalAgent
-from agents.thermometer_agent.thermometer import Thermometer
+from agents.thermometer_agent.Thermometer import Thermometer
 from agents.clock_agent.ClockAgent import ClockAgent
 import time
 import sys
@@ -32,6 +32,7 @@ if __name__ == "__main__":
     room4 = PrivateRoomAgent("room4@localhost", "room")
 
     technical = TechnicalAgent("technical@localhost", "technical")
+    thermometer = Thermometer("thermometer@localhost", "thermometer")
 
     clock = ClockAgent("clock@localhost", "clock")
     clock.agents_jids = ["room1@localhost", "room2@localhost", "room3@localhost", "room4@localhost",
@@ -67,6 +68,11 @@ if __name__ == "__main__":
     room3.temperature = 15
     room4.temperature = 20
 
+    room1.outdoor_agent = 'thermometer@localhost'
+    room2.outdoor_agent = 'thermometer@localhost'
+    room3.outdoor_agent = 'thermometer@localhost'
+    room4.outdoor_agent = 'thermometer@localhost'
+
     room1.neighbours = {"room2@localhost": {"wall_size": 20, "temperature": room2.temperature}}
     room2.neighbours = {"room1@localhost": {"wall_size": 20, "temperature": room1.temperature}, "room3@localhost": {"wall_size": 30, "temperature": room3.temperature}}
     room3.neighbours = {"room2@localhost": {"wall_size": 30, "temperature": room2.temperature}, "room4@localhost": {"wall_size": 20, "temperature": room4.temperature}}
@@ -81,6 +87,7 @@ if __name__ == "__main__":
     room3.start()
     room4.start()
     technical.start()
+    thermometer.start()
 
     time.sleep(5) #czekanie na uruchomienie sie wszystkich agentow wyzej
 
@@ -111,3 +118,4 @@ if __name__ == "__main__":
     room4.stop()
     clock.stop()
     technical.stop()
+    thermometer.stop()
