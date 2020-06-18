@@ -139,7 +139,7 @@ class MeetingRoomAgent(Agent):
                     #print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
                     await self.send(msg)
 
-class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
+    class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive(timeout = 1)
             if msg:
@@ -175,8 +175,6 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
                 self.agent.add_behaviour(b2)
                 # b3 = self.agent.SendOutdoorTemperatureRequestBehaviour()
                 # self.agent.add_behaviour(b3)
-
-
 
     class SendEnergyUsageInformBehaviour(OneShotBehaviour):
         def __init__(self):
