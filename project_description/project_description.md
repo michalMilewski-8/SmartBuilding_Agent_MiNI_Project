@@ -124,6 +124,16 @@ meet_inform = {
 }
 ```
 
+```Python
+meet_refuse = {
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
+    "room_id": 21,
+    "temperature": 30
+}
+```
+
 #### WymianaTemperaturyMiędzyPokojami
 ##### Diagram
 ![](diagrams_img/WymianaTemperaturyMiędzyPokojami.svg)

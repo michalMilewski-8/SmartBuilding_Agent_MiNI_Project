@@ -20,7 +20,7 @@ class PersonalAgent(Agent):
         self.preferred_temperature = 20
         self.personal_calendar = Calendar()
         self.central = ""
-        self.room = "" #id pokoju prywatnego
+        self.room = ""  # id pokoju prywatnego
         self.date = datetime.now()
 
     @staticmethod
@@ -102,6 +102,10 @@ class PersonalAgent(Agent):
     meet_inform_template.set_metadata('performative', 'inform')
     meet_inform_template.set_metadata('type', 'meet_inform')
 
+    meet_refuse_template = Template()
+    meet_refuse_template.set_metadata('performative', 'refuse')
+    meet_refuse_template.set_metadata('type', 'meet_refuse')
+
     new_meeting_inform_template = Template()
     new_meeting_inform_template.set_metadata('performative', 'inform')
     new_meeting_inform_template.set_metadata('type', 'new_meeting_inform')
@@ -152,7 +156,7 @@ class PersonalAgent(Agent):
 
         async def run(self):
             msg = PersonalAgent.prepare_late_inform(self, self.arrival_datetime,
-                                self.meeting_guid, self.force_move, self.agent.central)
+                                                    self.meeting_guid, self.force_move, self.agent.central)
             print(msg)
             await self.send(msg)
 
@@ -178,6 +182,15 @@ class PersonalAgent(Agent):
                                                        str_to_time(msg_data.get('start_date')),
                                                        str_to_time(msg_data.get('end_date')),
                                                        msg_data.get('temperature'))
+
+    class ReceiveNewMeetingRefuseBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout=1)
+            if msg:
+                print(msg)
+                msg_data = json.loads(msg.body)
+                print("meeting: " + msg_data['meeting_guid'] + " refused, no free rooms in time: " +
+                      msg_data.get('start_date') + " to " + msg_data.get('end_date'))
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
@@ -208,11 +221,13 @@ class PersonalAgent(Agent):
         datetime_inform_template = Template()
         datetime_inform_template.set_metadata('performative', 'inform')
         datetime_inform_template.set_metadata("type", "datetime_inform")
-        datetimeBehaviour = self.ReceiveDatetimeInformBehaviour()
-        self.add_behaviour(datetimeBehaviour, datetime_inform_template)
+        self.add_behaviour(self.ReceiveDatetimeInformBehaviour(), datetime_inform_template)
 
         self.add_behaviour(self.ReceiveNewMeetingInformBehaviour(),
                            self.new_meeting_inform_template | self.meet_inform_template)
+
+        self.add_behaviour(self.ReceiveNewMeetingRefuseBehaviour(),
+                           self.meet_refuse_template)
 
 
 if __name__ == "__main__":

@@ -189,11 +189,30 @@ class CentralAgent(Agent):
                 else:
                     return x[1]
 
+            meeting_impossible = True;
+            for meeting_scr in self.agent.meetings_info[self.meeting_guid]["scores"]:
+                if meeting_scr is not None:
+                    meeting_impossible = False
+
+            meeting = self.agent.meetings_info[self.meeting_guid]
+
+            if meeting_impossible:
+                organizer_response = Message(to=meeting["organizer_jid"])
+                organizer_response.set_metadata('performative', 'refuse')
+                organizer_response.set_metadata('type', 'meet_refuse')
+                organizer_response.body = json.dumps({'meeting_guid': self.meeting_guid,
+                                                      'start_date': time_to_str(meeting['start_date']),
+                                                      'end_date': time_to_str(meeting['end_date']),
+                                                      'room_id': meeting['room_id'],
+                                                      'temperature': meeting['temperature']
+                                                      })
+                await self.send(organizer_response)
+                self.agent.processing_meeting = False
+                return
+
             room_date = min(self.agent.meetings_info[self.meeting_guid]["scores"].items(), key=check)
 
             self.agent.meetings_info[self.meeting_guid]["room_id"] = room_date[0]
-
-            meeting = self.agent.meetings_info[self.meeting_guid]
 
             for receiver in meeting.get('participants'):
                 response = Message()
