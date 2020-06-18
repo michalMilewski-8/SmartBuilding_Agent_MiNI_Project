@@ -55,6 +55,12 @@ class CentralAgent(Agent):
         meeting_score_template.set_metadata('performative', 'inform')
         self.add_behaviour(self.ReceiveScoreBehaviour(), meeting_score_template)
 
+        meeting_late_template = Template()
+        meeting_late_template.set_metadata('performative', 'inform')
+        meeting_late_template.set_metadata('type', 'late')
+        meeting_late_behaviour = self.MeetingLateBehaviour()
+        self.add_behaviour(meeting_late_behaviour, meeting_late_template)
+
     async def find_best_room(self, behav, meet_guid, start_date, end_date, temp):
         print("find_best_room started")
 
@@ -135,7 +141,26 @@ class CentralAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
+                print(msg)
                 msg_body = json.loads(msg.body)
+                new_start_date = str_to_time(msg_body['arrival_datetime'])
+                guid = msg_body['meeting_guid']
+                if msg_body['force_move'] == True:
+                    print("DEBUG")
+                    old_start_date = self.agent.meetings_info[guid]['start_date']
+                    old_end_date = self.agent.meetings_info[guid]['end_date']
+                    new_end_date = old_end_date + (new_start_date - old_start_date)
+                    self.agent.meetings_info[msg_body["meeting_guid"]]["scores"] = {}
+                    self.agent.meetings_info[msg_body["meeting_guid"]]["start_date"] = new_start_date
+                    self.agent.meetings_info[msg_body["meeting_guid"]]["end_date"] = new_end_date
+                    await self.agent.find_best_room(self, guid, new_start_date, new_end_date,
+                                                    self.agent.meetings_info[guid]['temperature'])
+                else:
+                    self.agent.meetings_info[guid]['start_date'] = new_start_date
+                    behav = self.agent.RespondForMeetingRequest()
+                    behav.meeting_guid = guid
+                    self.agent.add_behaviour(behav)
+
 
     class ReceiveScoreBehaviour(CyclicBehaviour):
         async def run(self):

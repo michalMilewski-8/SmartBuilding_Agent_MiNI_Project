@@ -1,42 +1,8 @@
-# Raport 1
+# Raport 3
 
-## Struktura systemu agentowego:
-  - kalendarz centralny - będzie jednocześnie centralnym agentem podejmującym wszelkie decyzje
-  #### Pozostali agenci koomunikujący się z centralnym:
-  - klimatyzatory
-  - źródła energii
-  - ludzie
-  - termometry w pomieszczeniach i na zewnątrz
-  - prognoza pogody (np. agent pobierający temperaturę w danym dniu o danej godzinie z publicznego api)
-  - informacje o korkach na drogach (j.w.)
-## Opis części fizycznej projektu (termodynamika):
-  - obliczanie potrzebnej energii klimatyzatora w oparciu o uproszczony bilans cieplny   
-  - zakładamy, że temperatura w całym pokoju jest taka sama
-  - na temperaturę w pokoju składają się:
-    + wymiana ciepła przez każdą ze ścian pokoju (zarówno z innymi pokojami - ściany boczne oraz sufit i podłoga, jak i otoczeniem zewnętrznym)
-    + ciepło (w sensie fizycznym) klimatyzatora
-  - bierzemy pod uwagę izolację jaką są ściany.
-## Algorytm:
-  - dane wejściowe:
-      + data i długość spotkania
-      + żądana temperatura na spotkaniu
-      + informacje o lokalizacji organizatora spotkania (potencjalna informacja o spóźnieniu)
-  - cel - minimalizacja zużytej energii
-  - algorytm (propozycje do eksperymentowania):
-    + zachłanny - zawsze bierzemy pokój, który według symulacji będzie miał najbardziej zbliżoną temperaturą w czasie spotkania jak najmniejszym kosztem, spośród wolnych pokojów
-    + jeśli nie będzie za dużo danych, może uda się zastosować backtracking
-  - zakładamy minimalną oraz maksymalną temperaturę w pomieszczeniach utrzymywaną przez całą dobę żeby nie uległy zniszczeniu rzeczy znajdujące się w biurach. Decyzja jaka temperatura faktycznie będzie utrzymywana podejmowana dynamicznie
+## Cel projektu:
 
-  ## Bibliografia
-  - https://spade-mas.readthedocs.io/en/latest/
-  - https://www.researchgate.net/publication/3857054_A_multi-agent_system_for_controlling_intelligent_buildings
-  - https://www.researchgate.net/publication/228359500_A_Semiotic_Multi-Agent_System_for_Intelligent_Building_Control
-  - http://people.cs.ksu.edu/~danielwang/BAS/05342106.pdf
-  - https://www.researchgate.net/profile/Zhu_Wang4/publication/258114088_Adaptive_Negotiation_Agent_for_Facilitating_Bi-Directional_Energy_Trading_Between_Smart_Building_and_Utility_Grid/links/0deec52708f09ad63d000000.pdf
-
-# Raport 2
-
-Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projektu. Ustaliliśmy kluczowe elementy koncepcji, m.in. listę agentów i ich zadania. Zdefiniowaliśmy podstawowe wiadomości i eksperymentowaliśmy ze SPADE-m.
+Projekt ma na celu stworzenie systemu zarządzającego budynkiem, umawianie spotkań oraz minimalizację zużycia energii przeznaczonej na ogrzewanie pomieszczeń.
 
 ## Agenci
 
@@ -44,12 +10,12 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 
  - Rola: Agent personalny
  - Opis: Agent reprezentujący pracownika. Odpowiadający za umawianie spotkań. Informujący o ewentualnych spóźnieniach. Przechowuje kalendarz użytkownika.
- - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniu, NegocjacjaTerminuSpotkania, PreferencjePracownika, InformowanieODacieIGodzinie
+ - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, PreferencjePracownika, InformowanieODacieIGodzinie, InformowanieOSpóźnieniuDoBiura
  - Uprawnienia: Odczyt i modyfikacje osobistego kalendarza
  - Zadania:
 	  + Cykl życia:
-	    + EGZYSTENCJA = PreferencjePracownika.(UmawianieSpotkań | InformowanieODacieIGodzinie)ω
-	    + UmawianieSpotkań = (UmawianieSpotkania[NegocjacjaTerminuSpotkania])|InformowanieOSpóźnieniu
+	    + EGZYSTENCJA = PreferencjePracownika.(UmawianieSpotkań | InformowanieODacieIGodzinie | InformowanieOSpóźnieniuDoBiura)ω
+	    + UmawianieSpotkań = (UmawianieSpotkania)|InformowanieOSpóźnieniuNaSpotkanie
 	
 #### Agent pokoju spotkań
 
@@ -65,25 +31,25 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 
  - Rola: Agent pokoju osobistego
  - Opis: Agent reprezentujący pokój osobisty. Przechowuje własny kalendarz.
- - Protokoły i Aktywności: WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, PreferencjePracownika, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
+ - Protokoły i Aktywności: WymianaTemperaturyMiędzyPokojami, ZapytanieOTemperaturęNaZewnątrz, PreferencjePracownika, InformowanieOZużytejEnergii, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania, InformowanieOSpóźnieniuDoBiura
  - Uprawnienia: Odczyt i modyfikacje kalendarza pokoju. Dostęp do termometru i klimatyzacji.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
+       EGZYSTENCJA = PreferencjePracownika.(WymianaTemperaturyMiędzyPokojami | ZapytanieOTemperaturęNaZewnątrz | InformowanieOZużytejEnergii | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania | InformowanieOSpóźnieniuDoBiura) ω
 
 #### Agent centralny planujący
 
  - Rola: Agent centralny planujący
- - Opis: Agent przydzielający pokoje do spotkań. Przechowuje własny kalendarz.
- - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniu, NegocjacjaTerminuSpotkania, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
+ - Opis: Agent przydzielający pokoje do spotkań. Przechowuje kalendarze pokojów spotkań.
+ - Protokoły i Aktywności: UmawianieSpotkania, InformowanieOSpóźnieniuNaSpotkanie, InformowanieODacieIGodzinie, OcenaMożliwościPrzeprowadzeniaSpotkania
  - Uprawnienia: Odczyt i modyfikacje kalendarza.
  - Zadania:
      + Cykl życia:
-       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniu | NegocjacjaTerminuSpotkania | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
+       EGZYSTENCJA = (UmawianieSpotkania | InformowanieOSpóźnieniuNaSpotkanie | InformowanieODacieIGodzinie | OcenaMożliwościPrzeprowadzeniaSpotkania) ω
 
-#### Agent "energetyk"
+#### Agent techniczny
 
- - Rola: Agent "energetyk"
+ - Rola: Agent techniczny
  - Opis: Agent zbierający informacje o ilości zużytej energii.
  - Protokoły i Aktywności: InformowanieOZużytejEnergii
  - Uprawnienia: Brak.
@@ -94,7 +60,7 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 #### Agent "zegarek"
 
  - Rola: Agent "zegarek"
- - Opis: Agent synchronizujący czas.
+ - Opis: Agent synchronizujący czas. Potrzebny do symulowania przyspieszonego czasu.
  - Protokoły i Aktywności: InformowanieODacieIGodzinie
  - Uprawnienia: Brak.
  - Zadania:
@@ -114,12 +80,12 @@ Od ostatniego spotkania kilkukrotnie konsultowaliśmy koncepcję całego projekt
 ## Protkoły
  - UmawianieSpotkania,
  - WymianaTemperaturyMiędzyPokojami,
- - InformowanieOSpóźnieniu, 
+ - InformowanieOSpóźnieniuNaSpotkanie, 
+ - InformowanieOSpóźnieniuDoBiura, 
  - InformowanieODacieIGodzinie,
  - InformowanieOZużytejEnergii, 
  - PreferencjePracownika, 
  - ZapytanieOTemperaturęNaZewnątrz,
- - NegocjacjaTerminuSpotkania
  - OcenaMożliwościPrzeprowadzeniaSpotkania
 
 #### UmawianieSpotkania
@@ -153,7 +119,8 @@ meet_inform = {
     "meeting_guid": "AWDH5435-89oij-JIKI",
     "start_date": "23-01-2020 12:23",
     "end_date":"23-01-2020 14:23",
-    "room_id": 21
+    "room_id": 21,
+    "temperature": 30
 }
 ```
 
@@ -175,21 +142,47 @@ room_data_inform = {
 ```
 
 
-#### InformowanieOSpóźnieniu
+#### InformowanieOSpóźnieniuNaSpotkanie
 ##### Diagram
-![](diagrams_img/InformowanieOSpóźnieniu.svg)
+![](diagrams_img/InformowanieOSpóźnieniuNaSpotkanie.svg)
 
 ##### Przykładowe wiadomości
 ```Python
 late_inform = {
     "arrival_datetime": "16-04-2020 11:00",
-    "meeting_guid": "AWDH5435-89oij-JIKI"
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "force_move": False
 }
 ```
 
 ```Python
-late_confirm = {
-    "confirmed": true
+new_meeting_inform = {
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
+    "temperature": 30,
+    "room_id": 21,
+    "organizer_jid": "aaa@lll"
+}
+```
+
+```Python
+meet_inform = {
+    "meeting_guid": "AWDH5435-89oij-JIKI",
+    "start_date": "23-01-2020 12:23",
+    "end_date":"23-01-2020 14:23",
+    "room_id": 21,
+    "temperature": 30
+}
+```
+#### InformowanieOSpóźnieniuDoBiura
+##### Diagram
+![](diagrams_img/InformowanieOSpóźnieniuDoBiura.svg)
+
+##### Przykładowe wiadomości
+```Python
+job_late_inform = {
+    "arrival_datetime": "16-04-2020 11:00"
 }
 ```
 
@@ -232,46 +225,14 @@ preferences_inform = {
 
 ##### Przykładowe wiadomości
 ```Python
-outdoor_temperature_request = {}
+outdoor_temperature_request = {
+    "date": "23-01-2020 12:23"
+}
 ```
 
 ```Python
 outdoor_temperature_inform = {
-    "outdoor_temperature": 14
-}
-```
-
-#### NegocjacjaTerminuSpotkania
-##### Diagram
-![](diagrams_img/NegocjacjaTerminuSpotkania.svg)
-
-##### Przykładowe wiadomości
-```Python
-move_meeting_propose = {
-    "meeting_guid": "AWDH5435-89oij-JIKI",
-    "start_date": "23-01-2020 12:23",
-    "end_date":"23-01-2020 14:23"
-}
-```
-
-```Python
-accept_proposal = {
-    "meeting_guid": "AWDH5435-89oij-JIKI"
-}
-```
-
-```Python
-refuse_proposal = {
-    "meeting_guid": "AWDH5435-89oij-JIKI"
-}
-```
-
-```Python
-move_meeting_inform = {
-    "meeting_guid": "AWDH5435-89oij-JIKI",
-    "new_start_date": "23-01-2020 12:23",
-    "new_end_date": "23-01-2020 14:23",
-    "delete_meeting": true
+    "temperature": 14
 }
 ```
 
@@ -309,24 +270,20 @@ meeting_score_inform = {
     "score": 55
 }
 ```
-## Plan działania
+## Scenariusze
 
- - Implementacja dotychczas opracowanych założeń.
+ #### Spóźnienie agenta personalnego (na spotkanie)
 
-# Raport 2.5
+ Scenariusz ma na celu pokazanie poprawnego działania przesuwania istniejącego już spotkania z powodu spóźnienia organizatora. W scenariuszu tworzony jest agent personalny, cztery pokoje spotkań oraz agent centralny. Agent personalny tworzy nowe spotkanie, a po pewnym czasie informuje o spóźnieniu. Gdy informuje o spóźnieniu za pierwszym razem wymusza zmianę spotkania na nowe, które rozpocznie się o na nowo określonej godzinie i będzie trwało tyle samo czasu ile stare spotkanie. Za drugim razem nie ma wymuszenia, zatem godzina rozpoczęcia spotkania spotkania ulega zmianie, ale godzina zakończenia już nie. W obu przypadkach agenci pokojów spotkań oraz agent personalny otrzymują wiadomość od agenta centralnego jak o nowym spotkaniu.
 
-## Zmiany
+ #### Umawianie nowych spotkań
 
- Odłożyliśmy protokół związany z negocjacją na boczny plan, zajmiemy się nim w przyszłości.
+ Scenariusz ma na celu pokazanie poprawnego działania umieszczania spotkań w różnych pokojach z myślą o zaoszczędzeniu energii. W scenariuszu tworzeni są czterej agenci pokojów spotkań, dwaj agenci personalni oraz agent centralny. Jeden z agentów personalnych tworzy nowe spotkanie. Następnie wysyła zapytanie do centralnego o nowe spotkanie. Centralny odpytuje wszystkie pokoje spotkań o ich ocenę kosztu danego spotkania. W tym przypadku każdy pokój ma tę samą ocenę, więc wybrany zostaje pierwszy. Następnie drugi agent personalny tworzy kolejne spotkanie w tym samym czasie. Centralny odpytuje wszystkie pokoje i ustawia spotkanie w pokoju sąsiednim z tym pierwszym (pierwszy zwraca koszt jako None, ponieważ jest zajęty w tym czasie). Następnie kolejne spotkanie jest umawiane zaraz po wcześniejszych spotkaniach. Centralny po odpytaniu wszystkich pokoi wybiera pokój w którym się odbywało pierwsze spotkanie, jako pokój z najmniejszym kosztem.
 
-## Postępy
+ #### Spóźnianie agenta personalnego (do biura)
 
- Zaimplementowaliśmy wysyłanie i odbieranie wiadomości (bez głębszego analizowania zawartości przychodzących wiadomości) w poszczególnych agentach.
+ Scenariusz ma na celu pokazanie opóźniania ogrzewania pokoju osobistego w przypadku spóźniania się jego użytkowników. Tworzeni są agenci personalni oraz agenci ich pokojów osobistych. Agenci personalni informują o spóźnieniu do biura. W "dobrym" scenariuszu ogrzewanie pokoju jest wtedy włączanie z odpowiednim opóźnieniem. "Zły" scenariusz nie reaguje na spóźnienie pracownika i zawsze uruchamia ogrzewanie o tej samej porze.
 
-## W toku
+## Stan prac
 
- Rozpoczęliśmy prace nad niezbędną logiką związaną z wysyłaniem i obieraniem wiadomości.
-
-## Plany
-
- Po zaimplementowaniu podstawowej logiki przygotujemy scenariusze, na których chcielibyśmy zaprezentować nasz system, dodamy wymagane funkcjonalności i przygotujemy te scenariusze.
+Kończymy implementację podstawowych scenariuszy wymienionych wyżej (i działają). Planujemy jeszcze stworzyć kompleksowy scenariusz przedstawiający jednocześnie wszystkie aspekty systemu. W naszych planach te zadania będą etapami kończącymi projekt.

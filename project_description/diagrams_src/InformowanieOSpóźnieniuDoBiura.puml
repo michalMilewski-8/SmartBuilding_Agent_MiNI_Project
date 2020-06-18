@@ -1,0 +1,7 @@
+@startuml
+actor AgentPersonalny
+actor AgentPokojuOsobistego
+
+AgentPersonalny -> AgentPokojuOsobistego: job_late_inform
+
+@enduml
