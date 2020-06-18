@@ -56,9 +56,7 @@ if __name__ == "__main__":
     time.sleep(1)
 
     personal1.new_meeting_set(datetime(2021, 5, 21, 22, 00), datetime(2021, 5, 21, 23, 00), 22, [])
-    time.sleep(0.1)
     personal2.new_meeting_set(datetime(2021, 5, 21, 22, 00), datetime(2021, 5, 21, 23, 00), 22, [])
-    time.sleep(0.1)
     personal1.new_meeting_set(datetime(2021, 5, 21, 23, 1), datetime(2021, 5, 22, 00, 00), 22, [])
 
     # wait until user interrupts with ctrl+C

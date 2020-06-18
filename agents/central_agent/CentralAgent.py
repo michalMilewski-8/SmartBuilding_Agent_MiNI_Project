@@ -14,6 +14,7 @@ class CentralAgent(Agent):
     meeting_room_calendars = {}
     # meeting_room_neighbours = {}
     meetings_info = {}  # example {"date_start": start_date, "date_end": end_date,
+    processing_meeting = False
 
     #           "temperature": temp, "scores": {room_jid:score}}
     def __init__(self, jid, password):
@@ -63,7 +64,6 @@ class CentralAgent(Agent):
 
     async def find_best_room(self, behav, meet_guid, start_date, end_date, temp):
         print("find_best_room started")
-
         for meeting_room in behav.agent.meeting_room_calendars.keys():
             score_request = Message(to=meeting_room)
             score_request.set_metadata("performative", "request")
@@ -118,24 +118,26 @@ class CentralAgent(Agent):
 
     class MeetingBookingBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive(timeout=1)
-            if msg:
-                print(msg)
-                msg_body = json.loads(msg.body)
-                self.agent.meetings_info[msg_body.get('meeting_guid')] = {'meeting_guid': msg_body.get('meeting_guid'),
-                                                                          'organizer_jid': str(msg.sender),
-                                                                          'start_date': str_to_time(
-                                                                              msg_body.get('start_date')),
-                                                                          'end_date': str_to_time(
-                                                                              msg_body.get('end_date')),
-                                                                          'room_id': None,
-                                                                          'temperature': msg_body.get('temperature'),
-                                                                          "participants": msg_body.get('participants'),
-                                                                          "scores": {}}
+            if not self.agent.processing_meeting:
+                msg = await self.receive(timeout=1)
+                if msg:
+                    print(msg)
+                    msg_body = json.loads(msg.body)
+                    self.agent.processing_meeting = True
+                    self.agent.meetings_info[msg_body.get('meeting_guid')] = {'meeting_guid': msg_body.get('meeting_guid'),
+                                                                              'organizer_jid': str(msg.sender),
+                                                                              'start_date': str_to_time(
+                                                                                  msg_body.get('start_date')),
+                                                                              'end_date': str_to_time(
+                                                                                  msg_body.get('end_date')),
+                                                                              'room_id': None,
+                                                                              'temperature': msg_body.get('temperature'),
+                                                                              "participants": msg_body.get('participants'),
+                                                                              "scores": {}}
 
-                await self.agent.find_best_room(self, msg_body.get('meeting_guid'),
-                                                str_to_time(msg_body.get('start_date')),
-                                                str_to_time(msg_body.get('end_date')), msg_body.get('temperature'))
+                    await self.agent.find_best_room(self, msg_body.get('meeting_guid'),
+                                                    str_to_time(msg_body.get('start_date')),
+                                                    str_to_time(msg_body.get('end_date')), msg_body.get('temperature'))
 
     class MeetingLateBehaviour(CyclicBehaviour):
         async def run(self):
@@ -235,3 +237,4 @@ class CentralAgent(Agent):
                                                   'temperature': meeting['temperature']
                                                   })
             await self.send(organizer_response)
+            self.agent.processing_meeting = False
