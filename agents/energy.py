@@ -1,9 +1,9 @@
-import datetime
 
 AIR_COEFFICIENT = 721 # J / (kg * C)
 AIR_DENSITY = 1.2 # kg / m**3
 WALL_COEFFICIENT = 0.1
 OUTDOOR_WALL_COEFFICIENT = 0.01
+
 
 def heat_balance(time_elapsed, last_temperature, room_capacity, neighbours, ac_power, outdoor_wall = 0, outdoor_temperature = 0):
     heat_lost_per_second = 0 
@@ -17,6 +17,9 @@ def heat_balance(time_elapsed, last_temperature, room_capacity, neighbours, ac_p
     temperature_lost = heat_lost / (AIR_COEFFICIENT * room_capacity * AIR_DENSITY)
     return heat_lost_per_second, heat_lost, temperature_lost
 
+
 def air_conditioner(last_temperature, needed_temperature, room_capacity):
+    if needed_temperature is None:
+        return 0
     heat_needed = AIR_COEFFICIENT * room_capacity * AIR_DENSITY * (needed_temperature - last_temperature)
     return heat_needed

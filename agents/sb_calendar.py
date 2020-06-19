@@ -102,3 +102,20 @@ class Calendar:
             if start >= date and start < date_after:
                 temp_after = temp
         return (temp_after+temp_before)/2
+
+    def get_proximity_peek(self, date, time_period):
+        preferred_temp = None
+        start_time = None
+        diff = float('Inf')
+        for start, end, temp in self.events.values():
+            if start <= date < end:
+                preferred_temp = temp
+                start_time = date+datetime.datetime(second=time_period)
+                return start_time, preferred_temp
+            if date+datetime.datetime(second=time_period) >= start > date:
+                if diff > start.seconds - date.seconds:
+                    preferred_temp = temp
+                    start_time = start
+                    diff = start.seconds - date.seconds
+
+        return start_time, preferred_temp
