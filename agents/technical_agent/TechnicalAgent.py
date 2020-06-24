@@ -47,7 +47,7 @@ class TechnicalAgent(Agent):
                 msg_body = json.loads(msg.body)
                 if 'energy_used_since_last_message' in msg_body:
                     self.agent.add_to_power(msg_body['energy_used_since_last_message']);
-                    print(self.agent.power)
+                    print("Power used so far: ", self.agent.power)
 
     # maybe useful - not deleting
     class GetRoomPowerBehaviour(PeriodicBehaviour):

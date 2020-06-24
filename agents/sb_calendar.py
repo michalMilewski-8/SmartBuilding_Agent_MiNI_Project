@@ -110,12 +110,12 @@ class Calendar:
         for start, end, temp in self.events.values():
             if start <= date < end:
                 preferred_temp = temp
-                start_time = date+datetime.datetime(second=time_period)
+                start_time = datetime.datetime.fromtimestamp(date.timestamp()+time_period)
                 return start_time, preferred_temp
-            if date+datetime.datetime(second=time_period) >= start > date:
-                if diff > start.seconds - date.seconds:
+            if (date.timestamp()+time_period) >= start.timestamp() > date.timestamp():
+                if diff > start.timestamp() - date.timestamp():
                     preferred_temp = temp
                     start_time = start
-                    diff = start.seconds - date.seconds
+                    diff = start.timestamp() - date.timestamp()
 
         return start_time, preferred_temp

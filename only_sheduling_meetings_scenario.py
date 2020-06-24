@@ -12,12 +12,25 @@ from agents.meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
 from agents.personal_agent.PersonalAgent import PersonalAgent
 from agents.technical_agent.TechnicalAgent import TechnicalAgent
 from agents.thermometer_agent.Thermometer import Thermometer
+from agents.clock_agent.ClockAgent import ClockAgent
 import time
 import sys
 
 
 
 if __name__ == "__main__":
+
+    start_date = datetime(2021, 5, 21, 7, 0)
+
+    technical = TechnicalAgent("technical@localhost", "technical")
+    thermometer = Thermometer("thermometer@localhost", "thermometer")
+
+    clock = ClockAgent("clock@localhost", "clock")
+    clock.agents_jids = ["room1@localhost", "room2@localhost", "room3@localhost", "room4@localhost",
+                         "personal1@localhost", "personal2@localhost"]
+    clock.last_date_virtual = start_date
+    clock.time_speed = 200
+
     personal1 = PersonalAgent("personal1@localhost", "personal")
     personal2 = PersonalAgent("personal2@localhost", "personal")
 
@@ -35,10 +48,33 @@ if __name__ == "__main__":
     room3.central = "central@localhost"
     room4.central = "central@localhost"
 
-    room1.neighbours = ["room2@localhost"]
-    room2.neighbours = ["room1@localhost", "room3@localhost"]
-    room3.neighbours = ["room2@localhost", "room4@localhost"]
-    room4.neighbours = ["room3@localhost"]
+    room1.energy_agent = "technical@localhost"
+    room2.energy_agent = "technical@localhost"
+    room3.energy_agent = "technical@localhost"
+    room4.energy_agent = "technical@localhost"
+
+    room1.outdoor_agent = 'thermometer@localhost'
+    room2.outdoor_agent = 'thermometer@localhost'
+    room3.outdoor_agent = 'thermometer@localhost'
+    room4.outdoor_agent = 'thermometer@localhost'
+
+    room1.date = start_date
+    room2.date = start_date
+    room3.date = start_date
+    room4.date = start_date
+    personal1.date = start_date
+    personal2.date = start_date
+
+    room1.temperature = 20
+    room2.temperature = 20
+    room3.temperature = 20
+    room4.temperature = 20
+
+
+    room1.neighbours = {"room2@localhost": {"wall_size": 20, "temperature": room2.temperature}}
+    room2.neighbours = {"room1@localhost": {"wall_size": 20, "temperature": room1.temperature}, "room3@localhost": {"wall_size": 30, "temperature": room3.temperature}}
+    room3.neighbours = {"room2@localhost": {"wall_size": 30, "temperature": room2.temperature}, "room4@localhost": {"wall_size": 20, "temperature": room4.temperature}}
+    room4.neighbours = {"room3@localhost": {"wall_size": 20, "temperature": room3.temperature}}
 
     centralny.add_meeting_room("room2@localhost")
     centralny.add_meeting_room("room1@localhost")
@@ -52,17 +88,19 @@ if __name__ == "__main__":
     room2.start()
     room3.start()
     room4.start()
+    technical.start()
+    thermometer.start()
 
     time.sleep(1)
-
-    personal1.new_meeting_set(datetime(2021, 5, 21, 22, 00), datetime(2021, 5, 21, 23, 00), 22, [])
-    personal2.new_meeting_set(datetime(2021, 5, 21, 22, 00), datetime(2021, 5, 21, 23, 00), 22, [])
-    personal1.new_meeting_set(datetime(2021, 5, 21, 23, 1), datetime(2021, 5, 22, 00, 00), 22, [])
+    clock.start()
+    personal1.new_meeting_set(datetime(2021, 5, 21, 10, 00), datetime(2021, 5, 21, 14, 00), 36, [])
+    personal2.new_meeting_set(datetime(2021, 5, 21, 10, 00), datetime(2021, 5, 21, 14, 00), 20, [])
+    personal1.new_meeting_set(datetime(2021, 5, 21, 14, 1), datetime(2021, 5, 22, 00, 00), 16, [])
 
     # wait until user interrupts with ctrl+C
     while True:
         try:
-            time.sleep(0.1)
+            time.sleep(1)
         except KeyboardInterrupt:
             break
 

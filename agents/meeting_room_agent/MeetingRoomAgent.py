@@ -181,7 +181,7 @@ class MeetingRoomAgent(Agent):
                         heat_needed = air_conditioner(self.agent.temperature,
                                                       temperature_at_next_meeting, self.agent.room_capacity)
 
-                    if time_elapsed.seconds > (next_meeting_time - self.agent.date).seconds:
+                    if next_meeting_time is not None and time_elapsed.seconds > (next_meeting_time - self.agent.date).seconds:
                         diff = next_meeting_time - self.agent.date
                         self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
                     else:
