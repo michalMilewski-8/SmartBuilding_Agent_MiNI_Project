@@ -3,11 +3,13 @@ from spade.behaviour import CyclicBehaviour, OneShotBehaviour, PeriodicBehaviour
 from spade.message import Message
 from spade.template import Template
 from spade import quit_spade
+
 from ..sb_calendar import Calendar
 import json
 from datetime import datetime
 from ..time_conversion import time_to_str, str_to_time
 
+is_best_room_selected_for_meeting = True
 
 class CentralAgent(Agent):
     date = None
@@ -190,7 +192,7 @@ class CentralAgent(Agent):
                     return x[1]
 
             meeting_impossible = True;
-            for meeting_scr in self.agent.meetings_info[self.meeting_guid]["scores"]:
+            for key, meeting_scr in self.agent.meetings_info[self.meeting_guid]["scores"].items():
                 if meeting_scr is not None:
                     meeting_impossible = False
 
@@ -211,6 +213,11 @@ class CentralAgent(Agent):
                 return
 
             room_date = min(self.agent.meetings_info[self.meeting_guid]["scores"].items(), key=check)
+
+            if not is_best_room_selected_for_meeting:
+                for key, meeting_scr in self.agent.meetings_info[self.meeting_guid]["scores"].items():
+                    if meeting_scr is not None:
+                        room_date = [key, meeting_scr]
 
             self.agent.meetings_info[self.meeting_guid]["room_id"] = room_date[0]
 

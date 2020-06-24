@@ -1,0 +1,1 @@
+is_best_room_selected_for_meeting = True
