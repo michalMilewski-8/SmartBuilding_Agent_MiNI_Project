@@ -1,7 +1,11 @@
 import datetime
+import runtime_switches
+
 
 class Calendar:
-    def __init__(self, room_idle_temp = 16):
+    last_temp = (runtime_switches.boundary_up-runtime_switches.boundary_down) /2
+
+    def __init__(self, room_idle_temp=(runtime_switches.boundary_up - runtime_switches.boundary_down) / 2):
         self.events = {}
         self.room_idle_temp = room_idle_temp;
 
@@ -29,13 +33,14 @@ class Calendar:
                 return False
         return True
 
-    def closest_meeting_by_start_to_end(self,start_date):
+    def closest_meeting_by_start_to_end(self, start_date):
         def compare(x, st):
             if st >= x:
-                return st-x
+                return st - x
             else:
                 return None
-        return min(self.events, key= lambda x: compare(x[1][1], start_date))
+
+        return min(self.events, key=lambda x: compare(x[1][1], start_date))
 
     def closest_meeting_by_end_to_start(self, end_date):
         def compare(x, st):
@@ -43,6 +48,7 @@ class Calendar:
                 return x - st
             else:
                 return None
+
         return min(self.events, key=lambda x: compare(x[1][0], end_date))
 
     def calculate_points(self, start_date, end_date, temp):
@@ -94,14 +100,14 @@ class Calendar:
     def get_temperature_at(self, date):
         temp_before = self.room_idle_temp
         temp_after = self.room_idle_temp
-        date_before = datetime.datetime(1900,1,1)
-        date_after = datetime.datetime(2100,1,1)
+        date_before = datetime.datetime(1900, 1, 1)
+        date_after = datetime.datetime(2100, 1, 1)
         for start, end, temp in self.events.values():
             if end <= date and end > date_before:
                 temp_before = temp
             if start >= date and start < date_after:
                 temp_after = temp
-        return (temp_after+temp_before)/2
+        return (temp_after + temp_before) / 2
 
     def get_proximity_peek(self, date, time_period):
         preferred_temp = None
@@ -110,12 +116,17 @@ class Calendar:
         for start, end, temp in self.events.values():
             if start <= date < end:
                 preferred_temp = temp
-                start_time = datetime.datetime.fromtimestamp(date.timestamp()+time_period)
+                start_time = datetime.datetime.fromtimestamp(date.timestamp() + time_period)
                 return start_time, preferred_temp
-            if (date.timestamp()+time_period) >= start.timestamp() > date.timestamp():
+            if (date.timestamp() + time_period) >= start.timestamp() > date.timestamp():
                 if diff > start.timestamp() - date.timestamp():
                     preferred_temp = temp
                     start_time = start
                     diff = start.timestamp() - date.timestamp()
 
+        if not runtime_switches.is_temerature_modulated_to_best_one:
+            if preferred_temp is None:
+                preferred_temp = self.last_temp
+        if preferred_temp is not None:
+            self.last_temp = preferred_temp
         return start_time, preferred_temp

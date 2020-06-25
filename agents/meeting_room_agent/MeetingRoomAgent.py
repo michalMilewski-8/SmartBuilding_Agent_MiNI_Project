@@ -12,9 +12,7 @@ import time
 from datetime import datetime
 import sys
 from ..energy import heat_balance, air_conditioner
-
-boundary_up = 25
-boundary_down = 16
+import runtime_switches
 
 
 class MeetingRoomAgent(Agent):
@@ -171,21 +169,16 @@ class MeetingRoomAgent(Agent):
                         self.agent.date, time_elapsed.seconds)
                     heat_needed = 0
                     if temperature_at_next_meeting is None:
-                        if self.agent.temperature < boundary_down:
+                        if self.agent.temperature < runtime_switches.boundary_down:
                             heat_needed = air_conditioner(self.agent.temperature,
-                                                          boundary_down, self.agent.room_capacity)
-                        elif self.agent.temperature > boundary_up:
+                                                          runtime_switches.boundary_down, self.agent.room_capacity)
+                        elif self.agent.temperature > runtime_switches.boundary_up:
                             heat_needed = air_conditioner(self.agent.temperature,
-                                                          boundary_up, self.agent.room_capacity)
+                                                          runtime_switches.boundary_up, self.agent.room_capacity)
                     else:
                         heat_needed = air_conditioner(self.agent.temperature,
                                                       temperature_at_next_meeting, self.agent.room_capacity)
-
-                    if next_meeting_time is not None and time_elapsed.seconds > (next_meeting_time - self.agent.date).seconds:
-                        diff = next_meeting_time - self.agent.date
-                        self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
-                    else:
-                        self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
+                    self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
 
                 b2 = self.agent.SendRoomDataExchangeRequestBehaviour()
                 self.agent.add_behaviour(b2)

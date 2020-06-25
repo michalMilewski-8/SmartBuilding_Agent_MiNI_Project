@@ -18,9 +18,9 @@ import sys
 import runtime_switches
 
 
-
 if __name__ == "__main__":
-
+    runtime_switches.is_temerature_modulated_to_best_one = False
+    runtime_switches.is_best_room_selected_for_meeting = False
     start_date = datetime(2021, 5, 21, 9, 0)
 
     technical = TechnicalAgent("technical@localhost", "technical")

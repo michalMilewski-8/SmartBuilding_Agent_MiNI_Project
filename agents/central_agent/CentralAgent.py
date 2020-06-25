@@ -8,8 +8,8 @@ from ..sb_calendar import Calendar
 import json
 from datetime import datetime
 from ..time_conversion import time_to_str, str_to_time
+import runtime_switches
 
-is_best_room_selected_for_meeting = True
 
 class CentralAgent(Agent):
     date = None
@@ -214,7 +214,7 @@ class CentralAgent(Agent):
 
             room_date = min(self.agent.meetings_info[self.meeting_guid]["scores"].items(), key=check)
 
-            if not is_best_room_selected_for_meeting:
+            if not runtime_switches.is_best_room_selected_for_meeting:
                 for key, meeting_scr in self.agent.meetings_info[self.meeting_guid]["scores"].items():
                     if meeting_scr is not None:
                         room_date = [key, meeting_scr]

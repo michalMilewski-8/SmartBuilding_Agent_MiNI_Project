@@ -23,7 +23,7 @@ class ClockAgent(Agent):
 
     async def setup(self):
         print('Clock setup')
-        send_date_behaviour = self.SendDate(period = 5)
+        send_date_behaviour = self.SendDate(period = 1)
         self.add_behaviour(send_date_behaviour)
 
     class SendDate(PeriodicBehaviour):

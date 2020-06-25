@@ -128,10 +128,10 @@ class PrivateRoomAgent(Agent):
                     print(str(self.agent.jid) + " temp " +str(self.agent.temperature))
                     self.agent.temperature -= temperature_lost
                     heat_needed = air_conditioner(self.agent.temperature, 
-                        self.agent.preferred_temperature, self.agent.room_capacity) #TUTAJ W MEETING ROMM ZAMIAST PREFERRED TEMP POWINNO BYC COS INNEGO
-                    if self.agent.date < self.agent.first_guy_coming_at: #TO TEZ W MEETING ROOM WYGLADA INACZEJ
+                        self.agent.preferred_temperature, self.agent.room_capacity)
+                    if self.agent.date < self.agent.first_guy_coming_at:
                         diff = self.agent.first_guy_coming_at - self.agent.date
-                        self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
+                        self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance # jesteś pewien że to zadziałą? spójrz na 119 i implementację heat_balance()
                     else:
                         self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
                 b2 = self.agent.SendRoomDataExchangeRequestBehaviour()
