@@ -26,7 +26,7 @@ if __name__ == "__main__":
     technical = TechnicalAgent("technical@localhost", "technical")
     thermometer = Thermometer("thermometer@localhost", "thermometer")
 
-    clock = ClockAgent("clock@localhost", "clock")
+    clock = ClockAgent("clock@localhost", "clock", 200, 5)
     clock.agents_jids = ["room1@localhost", "room2@localhost", "room3@localhost", "room4@localhost",
                          "personal1@localhost", "personal2@localhost"]
     clock.last_date_virtual = start_date
