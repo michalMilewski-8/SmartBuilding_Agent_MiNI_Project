@@ -3,7 +3,8 @@ import runtime_switches
 
 
 class Calendar:
-    last_temp = (runtime_switches.boundary_up-runtime_switches.boundary_down) /2
+    last_temp = runtime_switches.boundary_down + (
+                runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
 
     def __init__(self, room_idle_temp=(runtime_switches.boundary_up - runtime_switches.boundary_down) / 2):
         self.events = {}
@@ -118,7 +119,7 @@ class Calendar:
                 preferred_temp = temp
                 start_time = datetime.datetime.fromtimestamp(date.timestamp() + time_period)
                 return start_time, preferred_temp
-            if (date.timestamp() + time_period) >= start.timestamp() > date.timestamp():
+            if (date.timestamp() + time_period * 2) >= start.timestamp() > date.timestamp():
                 if diff > start.timestamp() - date.timestamp():
                     preferred_temp = temp
                     start_time = start
