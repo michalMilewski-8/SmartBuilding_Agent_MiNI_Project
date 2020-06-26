@@ -46,6 +46,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+
     if args.people:
         number_of_people = args.people
     if args.rooms:
@@ -72,32 +73,32 @@ if __name__ == "__main__":
     personal_room_jid_prefix = 'personal_room'
     personal_agent_jid_prefix = 'personal_agent'
 
-    personal_agents = [] * number_of_people
-    personal_room_agents = [] * number_of_people
-    meeting_room_agents = [] * number_of_meeting_rooms
+    personal_agents = [None] * number_of_people
+    personal_room_agents = [None] * number_of_people
+    meeting_room_agents = [None] * number_of_meeting_rooms
 
-    lates_meeting_time = timedelta(days=number_of_simulated_days)
-
+    lates_meeting_time = timedelta(seconds=number_of_simulated_days*24*60*60)
+    print("spotkanie zaczyna się o: ", lates_meeting_time)
     for i in range(0, number_of_people):
         personal_agents[i] = PersonalAgent(personal_agent_jid_prefix + str(i) + jid_suffix, password)
         personal_agents[i].date = start_date
-        personal_agents[i].central = central_jid
-        clock.agents_jids.append(personal_agents[i].jid)
+        personal_agents[i].central = str(central_jid)
+        clock.agents_jids.append(str(personal_agents[i].jid))
 
         personal_room_agents[i] = PrivateRoomAgent(personal_room_jid_prefix + str(i) + jid_suffix, password)
         personal_room_agents[i].date = start_date
-        personal_room_agents[i].add_personal_agent(personal_agents[i].jid)
+        personal_room_agents[i].add_personal_agent(str(personal_agents[i].jid))
         personal_room_agents[i].energy_agent = technical_jid
         personal_room_agents[i].outdoor_agent = thermometer_jid
-        clock.agents_jids.append(personal_room_agents[i].jid)
+        clock.agents_jids.append(str(personal_room_agents[i].jid))
 
-        personal_agents[i].set_personal_room(personal_room_agents[i].jid)
+        personal_agents[i].set_personal_room(str(personal_room_agents[i].jid))
 
     for i in range(0, number_of_people):
-        personal_room_agents[i].neighbours = {personal_room_agents[(i - 1) % number_of_people].jid:
+        personal_room_agents[i].neighbours = {str(personal_room_agents[(i - 1) % number_of_people].jid):
                                                   {"wall_size": personal_wall_size, "temperature":
                                                       personal_room_agents[(i - 1) % number_of_people].temperature},
-                                              personal_room_agents[(i + 1) % number_of_people].jid:
+                                              str(personal_room_agents[(i + 1) % number_of_people].jid):
                                                   {"wall_size": personal_wall_size, "temperature":
                                                       personal_room_agents[(i + 1) % number_of_people].temperature}}
 
@@ -107,14 +108,14 @@ if __name__ == "__main__":
         meeting_room_agents[i].central = central_jid
         meeting_room_agents[i].energy_agent = technical_jid
         meeting_room_agents[i].outdoor_agent = thermometer_jid
-        central.add_meeting_room(meeting_room_agents[i].jid)
-        clock.agents_jids.append(meeting_room_agents[i].jid)
+        central.add_meeting_room(str(meeting_room_agents[i].jid))
+        clock.agents_jids.append(str(meeting_room_agents[i].jid))
 
     for i in range(0, number_of_meeting_rooms):
-        meeting_room_agents[i].neighbours = {meeting_room_agents[(i - 1) % number_of_meeting_rooms].jid:
+        meeting_room_agents[i].neighbours = {str(meeting_room_agents[(i - 1) % number_of_meeting_rooms].jid):
                                                  {"wall_size": meeting_wall_size, "temperature":
                                                      personal_room_agents[(i - 1) % number_of_people].temperature},
-                                             meeting_room_agents[(i + 1) % number_of_meeting_rooms].jid:
+                                             str(meeting_room_agents[(i + 1) % number_of_meeting_rooms].jid):
                                                  {"wall_size": meeting_wall_size, "temperature":
                                                      personal_room_agents[(i + 1) % number_of_people].temperature}}
 
@@ -138,7 +139,8 @@ if __name__ == "__main__":
 
     for i in range(0, number_of_meetings):
         meeting_len = timedelta(minutes=meeting_kwant * random.randint(min_meeting_kwants, max_meeting_kwants))
-        meeting_start = start_date + timedelta(minutes=random.randint(0, lates_meeting_time.seconds // 60))
+        hmm = timedelta(minutes=random.randint(0, lates_meeting_time.seconds // 60))
+        meeting_start = start_date + hmm
         personal_agents[i % number_of_people].new_meeting_set(meeting_start, meeting_start + meeting_len,
                                                               random.randint(meeting_temp_min, meeting_temp_max), [])
 

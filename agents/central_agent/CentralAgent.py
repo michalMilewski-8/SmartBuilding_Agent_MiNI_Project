@@ -67,7 +67,7 @@ class CentralAgent(Agent):
     async def find_best_room(self, behav, meet_guid, start_date, end_date, temp):
         print("find_best_room started")
         for meeting_room in behav.agent.meeting_room_calendars.keys():
-            score_request = Message(to=meeting_room)
+            score_request = Message(to=str(meeting_room))
             score_request.set_metadata("performative", "request")
             score_request.set_metadata("type", "meeting_score_request")
             score_request.body = json.dumps({"meeting_guid": meet_guid,
