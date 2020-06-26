@@ -27,6 +27,7 @@ if __name__ == "__main__":
     parser.add_argument("--rooms", "-r", help="set number of meeting rooms")
     parser.add_argument("--meetings", "-m", help="set number of meetings to schedule")
     parser.add_argument("--days", "-d", help="set number of days to simulate")
+    parser.add_argument("--turn_off_optimalizations", "-t", help="turning off optimalizations", action="store_true")
 
     random.seed(14)
     meeting_kwant = 15  # ile minut ma kwant spotkania
@@ -46,7 +47,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-
     if args.people:
         number_of_people = args.people
     if args.rooms:
@@ -55,6 +55,10 @@ if __name__ == "__main__":
         number_of_meetings = args.meetings
     if args.days:
         number_of_simulated_days = args.days
+    if args.turn_off_optimalizations:
+        runtime_switches.is_best_room_selected_for_meeting = False
+        runtime_switches.is_temerature_modulated_to_best_one = False
+
 
     technical_jid = "technical@localhost"
     thermometer_jid = "thermometer@localhost"
@@ -77,7 +81,7 @@ if __name__ == "__main__":
     personal_room_agents = [None] * number_of_people
     meeting_room_agents = [None] * number_of_meeting_rooms
 
-    lates_meeting_time = timedelta(seconds=number_of_simulated_days*24*60*60)
+    lates_meeting_time = timedelta(days=number_of_simulated_days)
     print("spotkanie zaczyna się o: ", lates_meeting_time)
     for i in range(0, number_of_people):
         personal_agents[i] = PersonalAgent(personal_agent_jid_prefix + str(i) + jid_suffix, password)
@@ -139,7 +143,7 @@ if __name__ == "__main__":
 
     for i in range(0, number_of_meetings):
         meeting_len = timedelta(minutes=meeting_kwant * random.randint(min_meeting_kwants, max_meeting_kwants))
-        hmm = timedelta(minutes=random.randint(0, lates_meeting_time.seconds // 60))
+        hmm = timedelta(minutes=random.randint(0, lates_meeting_time.days*24*60))
         meeting_start = start_date + hmm
         personal_agents[i % number_of_people].new_meeting_set(meeting_start, meeting_start + meeting_len,
                                                               random.randint(meeting_temp_min, meeting_temp_max), [])
