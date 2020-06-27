@@ -37,7 +37,7 @@ class PrivateRoomAgent(Agent):
         self.outdoor_wall = 20
         self.outdoor_temperature = self.temperature
         self.first_guy_coming_at = self.date.replace(hour=self.default_day_start, minute=0, second=0)
-        self.light_const = 1000
+        self.light_const = 10000
 
     @staticmethod
     def prepare_room_data_exchange_request(temperature, receivers):
@@ -208,14 +208,14 @@ class PrivateRoomAgent(Agent):
             if msg:
                 msg_data = (json.loads(msg.body))
                 if "optimal_temperature" in msg_data:
-                    if runtime_switches.log_level >= 1:
+                    if runtime_switches.log_level >= 2:
                         print("Preferred temperature: {}".format(msg_data.get("optimal_temperature")))
                     self.agent.preferred_temperatures[str(msg.sender)] = msg_data.get("optimal_temperature")
                     sum_n = 0
                     for agent_jid in self.agent.preferred_temperatures:
                         sum_n = sum_n + self.agent.preferred_temperatures[agent_jid]
                     self.agent.preferred_temperature = sum_n / len(self.agent.preferred_temperatures)
-                    if runtime_switches.log_level >= 0:
+                    if runtime_switches.log_level >= 1:
                         print("Temperature set: {}".format(self.agent.preferred_temperature))
 
     class ReceiveTemperatureAtRequestBehaviour(CyclicBehaviour):

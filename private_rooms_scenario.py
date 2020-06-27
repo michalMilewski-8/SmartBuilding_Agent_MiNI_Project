@@ -11,6 +11,7 @@ import runtime_switches
 
 if __name__ == "__main__":
     runtime_switches.private_room_optimal_heating = False
+    runtime_switches.optimize_lightning = False
 
     start_date = datetime(2020,5,23,3,0)
 

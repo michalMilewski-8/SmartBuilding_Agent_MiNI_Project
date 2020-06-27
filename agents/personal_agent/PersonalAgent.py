@@ -87,6 +87,8 @@ class PersonalAgent(Agent):
     def job_late(self, arrival_datetime):
         job_late_inform_behav = self.SendJobLateInformBehaviour()
         job_late_inform_behav.set_details(arrival_datetime)
+        if runtime_switches.log_level >=1:
+            print(str(self.jid) + " is late " + str(arrival_datetime))
         self.add_behaviour(job_late_inform_behav)
 
     def set_personal_room(self, personal_room_jid):
@@ -156,7 +158,7 @@ class PersonalAgent(Agent):
         async def run(self):
             msg = PersonalAgent.prepare_late_inform(self, self.arrival_datetime,
                                                     self.meeting_guid, self.force_move, self.agent.central)
-            if runtime_switches.log_level >= 2:
+            if runtime_switches.log_level >= 4:
                 print(msg)
             await self.send(msg)
 
@@ -176,7 +178,7 @@ class PersonalAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 self.agent.personal_calendar.add_event(msg_data['meeting_guid'],
@@ -188,7 +190,7 @@ class PersonalAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 if runtime_switches.log_level >= 0:

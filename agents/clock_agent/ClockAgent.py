@@ -33,7 +33,7 @@ class ClockAgent(Agent):
          #   virtual_date = self.agent.last_date_virtual + virtual_time_difference
             virtual_date = self.agent.last_date_virtual + timedelta(seconds=self.agent.time_step) # jeśli chcesz wrócić do starej wersji zakomentuj tą linie i odkomentuj te wyżej
             self.agent.last_date_virtual = virtual_date
-            if runtime_switches.log_level >= 1:
+            if runtime_switches.log_level >= 0:
                 print("Current time is ", virtual_date)
             for agent in self.agent.agents_jids:
                 if runtime_switches.log_level >= 4:

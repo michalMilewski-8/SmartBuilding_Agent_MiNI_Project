@@ -108,7 +108,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 self.agent.personal_calendar.add_event(msg_data['meeting_guid'],
@@ -251,7 +251,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 guid = msg_data["request_guid"]
@@ -272,7 +272,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 temp = self.agent.personal_calendar.get_temperature_at(str_to_time(msg_data["date"]))
