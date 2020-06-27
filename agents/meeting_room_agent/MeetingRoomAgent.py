@@ -92,6 +92,10 @@ class MeetingRoomAgent(Agent):
     new_meeting_inform_template.set_metadata('performative', 'inform')
     new_meeting_inform_template.set_metadata('type', 'new_meeting_inform')
 
+    delete_meeting_inform_template = Template()
+    delete_meeting_inform_template.set_metadata('performative', 'inform')
+    delete_meeting_inform_template.set_metadata('type', 'delete_meeting_inform')
+
     outdoor_temperature_inform_template = Template()
     outdoor_temperature_inform_template.set_metadata('performative', 'inform')
     outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature_inform')
@@ -282,6 +286,14 @@ class MeetingRoomAgent(Agent):
                 msg_data = json.loads(msg.body)
                 self.agent.outdoor_temperature = msg_data["temperature"]
 
+    class ReceiveDeleteMeetingInformBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout=1)
+            if msg:
+                print(msg)
+                msg_data = json.loads(msg.body)
+                self.agent.personal_calendar.delete_event(msg_data['meeting_guid'])
+
     async def setup(self):
         if runtime_switches.log_level >= 0:
             print(str(self.jid) + " Meeting room agent setup")
@@ -320,6 +332,8 @@ class MeetingRoomAgent(Agent):
         self.add_behaviour(datetimeBehaviour, datetime_inform_template)
 
         self.add_behaviour(self.ReceiveNewMeetingInformBehaviour(), self.new_meeting_inform_template)
+
+        self.add_behaviour(self.ReceiveDeleteMeetingInformBehaviour(), self.delete_meeting_inform_template)
 
         outdoor_temperature_inform_template = Template()
         outdoor_temperature_inform_template.set_metadata('performative', 'inform')

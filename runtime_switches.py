@@ -3,6 +3,7 @@ is_temerature_modulated_to_best_one = True
 private_room_optimal_heating = True
 add_light_and_conditioning_const = True
 optimize_lightning = True
+meeting_late_inform = True
 
 boundary_up = 27
 boundary_down = 16

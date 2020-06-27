@@ -155,6 +155,15 @@ class CentralAgent(Agent):
                 if msg_body['force_move'] == True:
                     if runtime_switches.log_level >=3:
                         print("DEBUG")
+
+                    response = Message()
+                    response.set_metadata('performative', 'inform')
+                    response.set_metadata('type', 'delete_meeting_inform')
+                    response.body = json.dumps({'meeting_guid': guid})
+                    response.to = str(self.agent.meetings_info[msg_body["meeting_guid"]]["room_id"])
+                    print(response)
+                    await self.send(response)
+
                     old_start_date = self.agent.meetings_info[guid]['start_date']
                     old_end_date = self.agent.meetings_info[guid]['end_date']
                     new_end_date = old_end_date + (new_start_date - old_start_date)
