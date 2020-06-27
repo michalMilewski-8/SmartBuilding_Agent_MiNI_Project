@@ -3,7 +3,7 @@ from spade.behaviour import CyclicBehaviour
 from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
-from datetime import datetime
+from datetime import datetime,timedelta
 from ..energy import heat_balance, air_conditioner
 from ..sb_calendar import Calendar
 from ..time_conversion import time_to_str, str_to_time
@@ -29,12 +29,15 @@ class PrivateRoomAgent(Agent):
         self.energy_agent = ""
         self.date = datetime.now()
         self.coming_at = {}
-        self.first_guy_coming_at = self.date.replace(hour=7, minute=0, second=0)
+        self.default_day_start = 7
+        self.end_of_day = 17
         self.ac_power = 0
         self.room_capacity = 200
         self.ac_performance = 1
         self.outdoor_wall = 20
         self.outdoor_temperature = self.temperature
+        self.first_guy_coming_at = self.date.replace(hour=self.default_day_start, minute=0, second=0)
+        self.light_const = 1000
 
     @staticmethod
     def prepare_room_data_exchange_request(temperature, receivers):
@@ -83,10 +86,10 @@ class PrivateRoomAgent(Agent):
                 msg_data = json.loads(msg.body)
                 temperature = msg_data["temperature"]
                 self.agent.neighbours[str(msg.sender)]["temperature"] = temperature
-                if runtime_switches.log_level >= 3:
+                if runtime_switches.log_level >= 4:
                     print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
                 msg2 = PrivateRoomAgent.prepare_room_data_inform(self.agent.temperature, str(msg.sender))
-                if runtime_switches.log_level >= 3:
+                if runtime_switches.log_level >= 4:
                     print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
                 await self.send(msg2)
 
@@ -96,7 +99,7 @@ class PrivateRoomAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.neighbours[str(msg.sender)]["temperature"] = msg_data["temperature"]
-                if runtime_switches.log_level >= 3:
+                if runtime_switches.log_level >= 4:
                     print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
 
     class SendRoomDataExchangeRequestBehaviour(OneShotBehaviour):
@@ -104,7 +107,7 @@ class PrivateRoomAgent(Agent):
             for neighbour in self.agent.neighbours:
                 if neighbour < str(self.agent.jid):
                     msg = PrivateRoomAgent.prepare_room_data_exchange_request(self.agent.temperature, neighbour)
-                    if runtime_switches.log_level >= 3:
+                    if runtime_switches.log_level >= 4:
                         print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
                     await self.send(msg)
 
@@ -115,28 +118,52 @@ class PrivateRoomAgent(Agent):
                 msg_data = json.loads(msg.body)
                 new_time = str_to_time(msg_data['datetime'])
                 last_time = self.agent.date
+                if last_time.day != new_time.day:
+                    self.agent.first_guy_coming_at = new_time.replace(hour=self.agent.default_day_start, minute=0, second=0)
                 self.agent.date = new_time
                 if runtime_switches.log_level >= 3:
                     print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed = new_time - last_time
                 b = self.agent.SendEnergyUsageInformBehaviour()
-                b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                if runtime_switches.add_light_and_conditioning_const:
+                    if runtime_switches.optimize_lightning:
+                        if new_time > self.agent.first_guy_coming_at and new_time.hour < self.agent.end_of_day:
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                        else:
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                    else:
+                        b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                else:
+                    b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
                 self.agent.add_behaviour(b)
 
                 if time_elapsed.seconds > 0:
-                    energy_used = self.agent.ac_power * time_elapsed.seconds  # tak, time_elapsed.seconds dziala tak jak chcemy
+                    energy_used = self.agent.ac_power * time_elapsed.seconds
                     heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
                         time_elapsed, self.agent.temperature, self.agent.room_capacity,
                         self.agent.neighbours, self.agent.ac_power,
                         self.agent.outdoor_wall, self.agent.outdoor_temperature)
+                    self.agent.temperature -= temperature_lost
                     if runtime_switches.log_level >= 1:
                         print(str(self.agent.jid) + " temp " + str(self.agent.temperature))
-                    self.agent.temperature -= temperature_lost
-                    heat_needed = air_conditioner(self.agent.temperature,
-                                                  self.agent.preferred_temperature, self.agent.room_capacity)
-                    if self.agent.date < self.agent.first_guy_coming_at:
+                    if (len(self.agent.people) > 0 and self.agent.date.hour < self.agent.end_of_day) or not runtime_switches.private_room_optimal_heating:
+                        heat_needed = air_conditioner(self.agent.temperature,
+                                                    self.agent.preferred_temperature, self.agent.room_capacity)
+                    else:
+                        if self.agent.temperature < runtime_switches.boundary_down:
+                            heat_needed = air_conditioner(self.agent.temperature,
+                                                          runtime_switches.boundary_down, self.agent.room_capacity)
+                        elif self.agent.temperature > runtime_switches.boundary_up:
+                            heat_needed = air_conditioner(self.agent.temperature,
+                                                          runtime_switches.boundary_up, self.agent.room_capacity)
+                        else:
+                            heat_needed = 0
+                    if self.agent.date < self.agent.first_guy_coming_at and runtime_switches.private_room_optimal_heating:
                         diff = self.agent.first_guy_coming_at - self.agent.date
-                        self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance  # jesteś pewien że to zadziałą? spójrz na 119 i implementację heat_balance()
+                        if diff.seconds > 0:
+                            self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
+                        else:
+                            self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
                     else:
                         self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
                 b2 = self.agent.SendRoomDataExchangeRequestBehaviour()
@@ -211,6 +238,7 @@ class PrivateRoomAgent(Agent):
     async def setup(self):
         if runtime_switches.log_level >= 0:
             print(str(self.jid) + " Private room agent setup")
+        self.first_guy_coming_at = self.date.replace(hour=self.default_day_start, minute=0, second=0)
 
         datetime_inform_template = Template()
         datetime_inform_template.set_metadata('performative', 'inform')
@@ -256,8 +284,8 @@ class PrivateRoomAgent(Agent):
 
     def add_personal_agent(self, personal_agent_jid):
         self.people.append(personal_agent_jid)
-        self.coming_at[personal_agent_jid] = self.date.replace(hour=7, minute=0, second=0)
-        self.first_guy_coming_at = self.date.replace(hour=7, minute=0, second=0)
+        self.coming_at[personal_agent_jid] = self.date.replace(hour=self.default_day_start, minute=0, second=0)
+        self.first_guy_coming_at = self.date.replace(hour=self.default_day_start, minute=0, second=0)
 
 
 if __name__ == "__main__":

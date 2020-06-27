@@ -5,10 +5,13 @@ from agents.technical_agent.TechnicalAgent import TechnicalAgent
 from agents.thermometer_agent.Thermometer import Thermometer
 from agents.clock_agent.ClockAgent import ClockAgent
 import time
+import runtime_switches
 
 
 
 if __name__ == "__main__":
+    runtime_switches.private_room_optimal_heating = False
+
     start_date = datetime(2020,5,23,3,0)
 
     personal1 = PersonalAgent("personal1@localhost", "personal")
@@ -28,7 +31,8 @@ if __name__ == "__main__":
     clock.agents_jids = ["room1@localhost", "room2@localhost", "room3@localhost", "room4@localhost",
                         "personal1@localhost", "personal2@localhost", "personal3@localhost", "personal4@localhost"]
     clock.last_date_virtual = start_date
-    clock.time_speed = 200
+    clock.time_speed = 1600
+    clock.time_step = 30*60
 
     personal1.set_personal_room("room1@localhost")
     personal2.set_personal_room("room2@localhost")
