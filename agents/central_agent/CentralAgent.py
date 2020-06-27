@@ -14,14 +14,13 @@ class CentralAgent(Agent):
     meeting_room_calendars = {}
     # meeting_room_neighbours = {}
     meetings_info = {}  # example {"date_start": start_date, "date_end": end_date,
+    #                              "temperature": temp, "scores": {room_jid:score}}
     processing_meeting = False
 
-    #           "temperature": temp, "scores": {room_jid:score}}
     def __init__(self, jid, password):
         super().__init__(jid, password)
         date = None
         meeting_room_calendars = {}
-        # meeting_room_neighbours = {}
         meetings_info = {}
 
     @staticmethod
@@ -77,13 +76,6 @@ class CentralAgent(Agent):
                                              })
             await behav.send(score_request)
 
-    # def calculate_points(self, start_date, end_date, temp, room):
-    #     result = 0
-    #     result += self.meeting_room_calendars[room].calculate_points(start_date, end_date, temp)
-    #     for neigh in self.meeting_room_neighbours[room]:
-    #         result += self.meeting_room_calendars[neigh].calculate_points_as_neighbour(start_date, end_date, temp)
-    #     return result
-
     async def negotiate(self, behav, msg_guid, best_start_date, best_end_date,
                         receiver):
         move_meeting_propose = Message(to=receiver)
@@ -124,20 +116,21 @@ class CentralAgent(Agent):
             if not self.agent.processing_meeting:
                 msg = await self.receive(timeout=1)
                 if msg:
-                    if runtime_switches.log_level >=2:
+                    if runtime_switches.log_level >= 2:
                         print(msg)
                     msg_body = json.loads(msg.body)
                     self.agent.processing_meeting = True
-                    self.agent.meetings_info[msg_body.get('meeting_guid')] = {'meeting_guid': msg_body.get('meeting_guid'),
-                                                                              'organizer_jid': str(msg.sender),
-                                                                              'start_date': str_to_time(
-                                                                                  msg_body.get('start_date')),
-                                                                              'end_date': str_to_time(
-                                                                                  msg_body.get('end_date')),
-                                                                              'room_id': None,
-                                                                              'temperature': msg_body.get('temperature'),
-                                                                              "participants": msg_body.get('participants'),
-                                                                              "scores": {}}
+                    self.agent.meetings_info[msg_body.get('meeting_guid')] = {
+                        'meeting_guid': msg_body.get('meeting_guid'),
+                        'organizer_jid': str(msg.sender),
+                        'start_date': str_to_time(
+                            msg_body.get('start_date')),
+                        'end_date': str_to_time(
+                            msg_body.get('end_date')),
+                        'room_id': None,
+                        'temperature': msg_body.get('temperature'),
+                        "participants": msg_body.get('participants'),
+                        "scores": {}}
 
                     await self.agent.find_best_room(self, msg_body.get('meeting_guid'),
                                                     str_to_time(msg_body.get('start_date')),
@@ -153,7 +146,7 @@ class CentralAgent(Agent):
                 new_start_date = str_to_time(msg_body['arrival_datetime'])
                 guid = msg_body['meeting_guid']
                 if msg_body['force_move'] == True:
-                    if runtime_switches.log_level >=3:
+                    if runtime_switches.log_level >= 3:
                         print("DEBUG")
                     old_start_date = self.agent.meetings_info[guid]['start_date']
                     old_end_date = self.agent.meetings_info[guid]['end_date']
@@ -169,14 +162,13 @@ class CentralAgent(Agent):
                     behav.meeting_guid = guid
                     self.agent.add_behaviour(behav)
 
-
     class ReceiveScoreBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
                 # print(msg)
                 msg_body = json.loads(msg.body)
-                if runtime_switches.log_level >= 1:
+                if runtime_switches.log_level >= 2:
                     print('received score: ' + str(msg_body["score"]) + ' from: ' + str(msg.sender))
                 self.agent.meetings_info[msg_body["meeting_guid"]]["scores"][str(msg.sender)] = msg_body["score"]
                 if len(self.agent.meetings_info[msg_body["meeting_guid"]][
@@ -269,3 +261,7 @@ class CentralAgent(Agent):
                                                   })
             await self.send(organizer_response)
             self.agent.processing_meeting = False
+
+            if runtime_switches.log_level >= 0:
+                print("Meeting with GUID ", self.meeting_guid, " was scheduled in room ", meeting['room_id'], " from ",
+                      meeting['start_date'], " to ", meeting['end_date'], " with temperature ", meeting['temperature'])
