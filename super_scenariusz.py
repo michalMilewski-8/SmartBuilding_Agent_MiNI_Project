@@ -10,7 +10,6 @@ import time
 import random
 import argparse
 import runtime_switches
-import threading
 
 if __name__ == "__main__":
 
@@ -56,6 +55,8 @@ if __name__ == "__main__":
     if args.turn_off_optimalizations:
         runtime_switches.is_best_room_selected_for_meeting = False
         runtime_switches.is_temerature_modulated_to_best_one = False
+        runtime_switches.optimize_lightning = False
+        runtime_switches.private_room_optimal_heating = False
 
 
     technical_jid = "technical@localhost"
@@ -129,30 +130,25 @@ if __name__ == "__main__":
 
     for i in range(0, number_of_people):
         personal_agents[i].start()
-        # processes[i] = threading.Thread(target=personal_agents[i].start)
-        # processes[i].start()
         personal_room_agents[i].start()
-        # processes[number_of_people+i] = threading.Thread(target=personal_room_agents[i].start)
-        # processes[number_of_people+i].start()
 
     for i in range(0, number_of_meeting_rooms):
         meeting_room_agents[i].start()
-        # processes[number_of_people + number_of_people + i] = threading.Thread(target=personal_room_agents[i].start)
-        # processes[number_of_people + number_of_people + i].start()
 
     time.sleep(1)
 
     for i in range(0, number_of_people):
         personal_agents[i].set_preferred_temperature(random.randint(preferred_temp_private_min, preferred_temp_private_max))
 
-    clock.start()
-
     for i in range(0, number_of_meetings):
         meeting_len = timedelta(minutes=meeting_kwant * random.randint(min_meeting_kwants, max_meeting_kwants))
-        hmm = timedelta(minutes=random.randint(0, lates_meeting_time.days*24*60))
+        hmm = timedelta(minutes=random.randint(7*60, 18*60), days=random.randint(0, lates_meeting_time.days))
         meeting_start = start_date + hmm
         personal_agents[i % number_of_people].new_meeting_set(meeting_start, meeting_start + meeting_len,
                                                               random.randint(meeting_temp_min, meeting_temp_max), [])
+
+    time.sleep(5)
+    clock.start()
 
     # wait until user interrupts with ctrl+C
     while True:
