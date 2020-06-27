@@ -20,7 +20,7 @@ import runtime_switches
 
 if __name__ == "__main__":
 
-    start_date = datetime(2020,5,22,12,0)
+    start_date = datetime(2020,5,22,16,0)
 
     personal1 = PersonalAgent("personal1@localhost", "personal")
     personal2 = PersonalAgent("personal2@localhost", "personal")
@@ -95,15 +95,12 @@ if __name__ == "__main__":
     clock.start()
     time.sleep(1)
 
-    if runtime_switches.meeting_late_inform:
-        personal1.new_meeting_set(datetime(2020, 5, 22, 22, 00), datetime(2020, 5, 22, 23, 00), 25, [])
-        time.sleep(2)
-        guid = list(personal1.personal_calendar.get_events().keys())[0]
-        personal1.meeting_late(datetime(2020, 5, 22, 22, 15), guid, True)
-        time.sleep(2)
-        personal1.meeting_late(datetime(2020, 5, 22, 22, 30), guid, False)
-    else:
-        personal1.new_meeting_set(datetime(2020, 5, 22, 22, 00), datetime(2020, 5, 22, 23, 30), 25, [])
+    personal1.new_meeting_set(datetime(2020, 5, 22, 22, 00), datetime(2020, 5, 22, 23, 00), 25, [])
+    time.sleep(2)
+    guid = list(personal1.personal_calendar.get_events().keys())[0]
+    personal1.meeting_late(datetime(2020, 5, 22, 22, 15), guid, True)
+    time.sleep(2)
+    personal1.meeting_late(datetime(2020, 5, 22, 22, 30), guid, False)
 
     
 
