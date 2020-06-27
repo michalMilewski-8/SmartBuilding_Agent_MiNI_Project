@@ -22,6 +22,20 @@ if __name__ == "__main__":
     parser.add_argument("--meeting_late_prob", "-b", help="probability to be late on meeting")
     parser.add_argument("--turn_off_optimalizations", "-t", help="turning off optimalizations", action="store_true")
     parser.add_argument("--log", "-l", help="set log level")
+    parser.add_argument("--meeting_kwant",  help="set meeting timne kwant")
+    parser.add_argument("--min_meeting_kwants",  help="set meeting minimal time kwants")
+    parser.add_argument("--max_meeting_kwants",  help="set meeting maximal time kwants")
+    parser.add_argument("--preferred_temp_private_min",  help="set minimal private room temerature")
+    parser.add_argument("--preferred_temp_private_max",  help="set maximal private room temerature")
+    parser.add_argument("--job_late_min",  help="set minimal job late hour")
+    parser.add_argument("--job_late_max",  help="set maximal job late hour")
+    parser.add_argument("--meeting_temp_min",  help="set minimal meeting temerature")
+    parser.add_argument("--meeting_temp_max",  help="set maximal meeting temerature")
+    parser.add_argument("--personal_wall_size",  help="set personal room wall size")
+    parser.add_argument("--time_speed",  help="set time speed")
+    parser.add_argument("--time_kwant",  help="set time kwant")
+    parser.add_argument("--meeting_wall_size",  help="set meeting room wall size")
+    parser.add_argument("--seed",  help="set random seed")
 
     random.seed(14)
     meeting_kwant = 15  # ile minut ma kwant spotkania
@@ -37,7 +51,7 @@ if __name__ == "__main__":
     meeting_temp_min = 16
     meeting_temp_max = 30
     personal_wall_size = 30
-    time_speed = 600
+    time_speed = 200
     time_kwant = 15
     meeting_wall_size = 30
     number_of_people = 20
@@ -61,8 +75,35 @@ if __name__ == "__main__":
         job_late_prob = int(args.job_late_prob)
     if args.meeting_late_prob:
         meeting_late_prob = int(args.meeting_late_prob)
+    if args.meeting_kwant:
+        meeting_kwant = int(args.meeting_kwant)
+    if args.min_meeting_kwants:
+        min_meeting_kwants = int(args.min_meeting_kwants)
+    if args.max_meeting_kwants:
+        max_meeting_kwants = int(args.max_meeting_kwants)
+    if args.preferred_temp_private_min:
+        preferred_temp_private_min = int(args.preferred_temp_private_min)
+    if args.preferred_temp_private_max:
+        preferred_temp_private_max = int(args.preferred_temp_private_max)
+    if args.job_late_min:
+        job_late_min = int(args.job_late_min)
+    if args.job_late_max:
+        job_late_max = int(args.job_late_max)
+    if args.meeting_temp_min:
+        meeting_temp_min = int(args.meeting_temp_min)
+    if args.meeting_temp_max:
+        meeting_temp_max = int(args.meeting_temp_max)
+    if args.personal_wall_size:
+        personal_wall_size = int(args.personal_wall_size)
+    if args.time_speed:
+        time_speed = int(args.time_speed)
+    if args.time_kwant:
+        time_kwant = int(args.time_kwant)
+    if args.meeting_wall_size:
+        meeting_wall_size = int(args.meeting_wall_size)
+    if args.seed:
+        random.seed(int(args.seed))
     if args.log:
-        print(args.log)
         runtime_switches.log_level = int(args.log)
     if args.turn_off_optimalizations:
         runtime_switches.is_best_room_selected_for_meeting = False
@@ -93,7 +134,7 @@ if __name__ == "__main__":
     meeting_room_agents = [None] * number_of_meeting_rooms
 
     lates_meeting_time = timedelta(days=number_of_simulated_days)
-    print("spotkanie zaczyna się o: ", lates_meeting_time)
+    print("czas trwania symulacji: ", lates_meeting_time)
     for i in range(0, number_of_people):
         personal_agents[i] = PersonalAgent(personal_agent_jid_prefix + str(i) + jid_suffix, password)
         personal_agents[i].date = start_date
@@ -129,16 +170,14 @@ if __name__ == "__main__":
     for i in range(0, number_of_meeting_rooms):
         meeting_room_agents[i].neighbours = {str(meeting_room_agents[(i - 1) % number_of_meeting_rooms].jid):
                                                  {"wall_size": meeting_wall_size, "temperature":
-                                                     personal_room_agents[(i - 1) % number_of_people].temperature},
+                                                     meeting_room_agents[(i - 1) % number_of_meeting_rooms].temperature},
                                              str(meeting_room_agents[(i + 1) % number_of_meeting_rooms].jid):
                                                  {"wall_size": meeting_wall_size, "temperature":
-                                                     personal_room_agents[(i + 1) % number_of_people].temperature}}
+                                                     meeting_room_agents[(i + 1) % number_of_meeting_rooms].temperature}}
 
     central.start()
     technical.start()
     thermometer.start()
-
-    processes = [None]*(number_of_people+number_of_people+number_of_meeting_rooms)
 
     for i in range(0, number_of_people):
         personal_agents[i].start()
@@ -181,6 +220,8 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             break
 
+    clock.stop()
+
     for i in range(0, number_of_people):
         personal_agents[i].stop()
         personal_room_agents[i].stop()
@@ -191,7 +232,6 @@ if __name__ == "__main__":
     central.stop()
     technical.stop()
     thermometer.stop()
-    clock.stop()
 
     print("Power used till ", clock.last_date_virtual, " is ", technical.get_power())
 
