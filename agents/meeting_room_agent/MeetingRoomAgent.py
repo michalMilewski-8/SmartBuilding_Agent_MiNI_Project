@@ -31,6 +31,7 @@ class MeetingRoomAgent(Agent):
         self.outdoor_temperature = self.temperature
         self.outdoor_agent = ""
         self.energy_agent = ""
+        self.light_const = 1000
 
     @staticmethod
     def prepare_room_data_exchange_request(temperature, receivers):
@@ -160,7 +161,16 @@ class MeetingRoomAgent(Agent):
                     print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed = new_time - last_time
                 b = self.agent.SendEnergyUsageInformBehaviour()
-                b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                if runtime_switches.add_light_and_conditioning_const:
+                    if runtime_switches.optimize_lightning:
+                        if self.agent.personal_calendar.is_free(last_time, new_time):
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                        else:
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                    else:
+                        b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                else:
+                    b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
                 self.agent.add_behaviour(b)
 
                 if time_elapsed.seconds > 0:
