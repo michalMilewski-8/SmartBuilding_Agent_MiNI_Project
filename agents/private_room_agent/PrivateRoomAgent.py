@@ -37,6 +37,7 @@ class PrivateRoomAgent(Agent):
         self.outdoor_wall = 20
         self.outdoor_temperature = self.temperature
         self.first_guy_coming_at = self.date.replace(hour=self.default_day_start, minute=0, second=0)
+        self.light_const = 1000
 
     @staticmethod
     def prepare_room_data_exchange_request(temperature, receivers):
@@ -124,7 +125,16 @@ class PrivateRoomAgent(Agent):
                     print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed = new_time - last_time
                 b = self.agent.SendEnergyUsageInformBehaviour()
-                b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                if runtime_switches.add_light_and_conditioning_const:
+                    if runtime_switches.optimize_lightning:
+                        if new_time > self.agent.first_guy_coming_at and new_time.hour < self.agent.end_of_day:
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                        else:
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                    else:
+                        b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                else:
+                    b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
                 self.agent.add_behaviour(b)
 
                 if time_elapsed.seconds > 0:
