@@ -19,6 +19,7 @@ if __name__ == "__main__":
     parser.add_argument("--meetings", "-m", help="set number of meetings to schedule")
     parser.add_argument("--days", "-d", help="set number of days to simulate")
     parser.add_argument("--job_late_prob", "-j", help="probability to be late in job")
+    parser.add_argument("--meeting_late_prob", "-b", help="probability to be late on meeting")
     parser.add_argument("--turn_off_optimalizations", "-t", help="turning off optimalizations", action="store_true")
     parser.add_argument("--log", "-l", help="set log level")
 
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     job_late_min = 8
     job_late_max = 12
     job_late_prob = 70
+    meeting_late_prob = 70
     meeting_temp_min = 16
     meeting_temp_max = 30
     personal_wall_size = 30
@@ -57,6 +59,8 @@ if __name__ == "__main__":
         number_of_simulated_days = int(args.days)
     if args.job_late_prob:
         job_late_prob = int(args.job_late_prob)
+    if args.meeting_late_prob:
+        meeting_late_prob = int(args.meeting_late_prob)
     if args.log:
         print(args.log)
         runtime_switches.log_level = int(args.log)
@@ -154,6 +158,10 @@ if __name__ == "__main__":
         meeting_start = start_date + hmm
         personal_agents[i % number_of_people].new_meeting_set(meeting_start, meeting_start + meeting_len,
                                                               random.randint(meeting_temp_min, meeting_temp_max), [])
+        if random.random() <= meeting_late_prob/100:
+            personal_agents[i % number_of_people].meeting_late(meeting_start + meeting_len / 2, 
+                                                               personal_agents[i % number_of_people].last_guid,
+                                                               True if random.random() < 0.5  else False)
 
     time.sleep(5)
     clock.start()

@@ -139,7 +139,8 @@ class PersonalAgent(Agent):
             self.participants = participants
 
         async def run(self):
-            msg = PersonalAgent.prepare_meet_request(self, str(uuid.uuid4()), self.start_date, self.end_date, self.temp,
+            self.agent.last_guid = str(uuid.uuid4())
+            msg = PersonalAgent.prepare_meet_request(self, self.agent.last_guid, self.start_date, self.end_date, self.temp,
                                                      self.participants, self.agent.central)
             await self.send(msg)
 
