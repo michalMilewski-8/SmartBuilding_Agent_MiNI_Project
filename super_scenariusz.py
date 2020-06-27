@@ -27,6 +27,7 @@ if __name__ == "__main__":
     parser.add_argument("--rooms", "-r", help="set number of meeting rooms")
     parser.add_argument("--meetings", "-m", help="set number of meetings to schedule")
     parser.add_argument("--days", "-d", help="set number of days to simulate")
+    parser.add_argument("--job_late_prob", "-j", help="probability to be late in job")
     parser.add_argument("--turn_off_optimalizations", "-t", help="turning off optimalizations", action="store_true")
 
     random.seed(14)
@@ -36,6 +37,9 @@ if __name__ == "__main__":
     start_date = datetime(2020, 1, 1, 0, 0)
     preferred_temp_private_min = 20
     preferred_temp_private_max = 26
+    job_late_min = 8
+    job_late_max = 12
+    job_late_prob = 70
     meeting_temp_min = 16
     meeting_temp_max = 30
     personal_wall_size = 30
@@ -44,6 +48,7 @@ if __name__ == "__main__":
     number_of_meetings = 40
     number_of_simulated_days = 10
     number_of_meeting_rooms = 5
+    cur_date = start_date
 
     args = parser.parse_args()
 
@@ -55,9 +60,13 @@ if __name__ == "__main__":
         number_of_meetings = args.meetings
     if args.days:
         number_of_simulated_days = args.days
+    if args.job_late_prob:
+        job_late_prob = args.job_late_prob
     if args.turn_off_optimalizations:
         runtime_switches.is_best_room_selected_for_meeting = False
         runtime_switches.is_temerature_modulated_to_best_one = False
+        runtime_switches.optimize_lightning = False
+        runtime_switches.private_room_optimal_heating = False
 
 
     technical_jid = "technical@localhost"
@@ -134,7 +143,7 @@ if __name__ == "__main__":
     for i in range(0, number_of_meeting_rooms):
         meeting_room_agents[i].start()
 
-    time.sleep(1)
+    time.sleep(5)
 
     for i in range(0, number_of_people):
         personal_agents[i].set_preferred_temperature(random.randint(preferred_temp_private_min, preferred_temp_private_max))
@@ -148,10 +157,17 @@ if __name__ == "__main__":
         personal_agents[i % number_of_people].new_meeting_set(meeting_start, meeting_start + meeting_len,
                                                               random.randint(meeting_temp_min, meeting_temp_max), [])
 
+
     # wait until user interrupts with ctrl+C
     while True:
         try:
-            time.sleep(1)
+            new_date = clock.last_date_virtual
+            if new_date.day != cur_date.day:
+                for i in range(0, number_of_people):
+                    if random.random() <= job_late_prob/100:
+                        personal_agents[i].job_late(new_date.replace(hour = random.randint(job_late_min, job_late_max)))
+            cur_date = new_date
+            time.sleep(2)
         except KeyboardInterrupt:
             break
 

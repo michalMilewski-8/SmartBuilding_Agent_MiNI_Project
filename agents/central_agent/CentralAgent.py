@@ -124,7 +124,7 @@ class CentralAgent(Agent):
             if not self.agent.processing_meeting:
                 msg = await self.receive(timeout=1)
                 if msg:
-                    if runtime_switches.log_level >=2:
+                    if runtime_switches.log_level >=4:
                         print(msg)
                     msg_body = json.loads(msg.body)
                     self.agent.processing_meeting = True
@@ -147,7 +147,7 @@ class CentralAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_body = json.loads(msg.body)
                 new_start_date = str_to_time(msg_body['arrival_datetime'])
