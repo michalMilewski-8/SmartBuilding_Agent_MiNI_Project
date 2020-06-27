@@ -34,6 +34,7 @@ if __name__ == "__main__":
     parser.add_argument("--time_speed",  help="set time speed")
     parser.add_argument("--time_kwant",  help="set time kwant")
     parser.add_argument("--meeting_wall_size",  help="set meeting room wall size")
+    parser.add_argument("--seed",  help="set random seed")
 
     random.seed(14)
     meeting_kwant = 15  # ile minut ma kwant spotkania
@@ -96,8 +97,9 @@ if __name__ == "__main__":
         time_kwant = int(args.time_kwant)
     if args.meeting_wall_size:
         meeting_wall_size = int(args.meeting_wall_size)
+    if args.seed:
+        random.seed(int(args.seed))
     if args.log:
-        print(args.log)
         runtime_switches.log_level = int(args.log)
     if args.turn_off_optimalizations:
         runtime_switches.is_best_room_selected_for_meeting = False
@@ -164,16 +166,14 @@ if __name__ == "__main__":
     for i in range(0, number_of_meeting_rooms):
         meeting_room_agents[i].neighbours = {str(meeting_room_agents[(i - 1) % number_of_meeting_rooms].jid):
                                                  {"wall_size": meeting_wall_size, "temperature":
-                                                     personal_room_agents[(i - 1) % number_of_people].temperature},
+                                                     meeting_room_agents[(i - 1) % number_of_meeting_rooms].temperature},
                                              str(meeting_room_agents[(i + 1) % number_of_meeting_rooms].jid):
                                                  {"wall_size": meeting_wall_size, "temperature":
-                                                     personal_room_agents[(i + 1) % number_of_people].temperature}}
+                                                     meeting_room_agents[(i + 1) % number_of_meeting_rooms].temperature}}
 
     central.start()
     technical.start()
     thermometer.start()
-
-    processes = [None]*(number_of_people+number_of_people+number_of_meeting_rooms)
 
     for i in range(0, number_of_people):
         personal_agents[i].start()
