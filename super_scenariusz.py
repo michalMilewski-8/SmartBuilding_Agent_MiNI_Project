@@ -1,13 +1,4 @@
 from datetime import datetime, timedelta
-import random
-
-from spade.agent import Agent
-from spade.behaviour import CyclicBehaviour
-from spade.behaviour import PeriodicBehaviour
-from spade.message import Message
-from spade.template import Template
-from spade import quit_spade
-import json
 from agents.central_agent.CentralAgent import CentralAgent
 from agents.meeting_room_agent.MeetingRoomAgent import MeetingRoomAgent
 from agents.personal_agent.PersonalAgent import PersonalAgent
@@ -16,9 +7,10 @@ from agents.thermometer_agent.Thermometer import Thermometer
 from agents.clock_agent.ClockAgent import ClockAgent
 from agents.private_room_agent.PrivateRoomAgent import PrivateRoomAgent
 import time
-import sys
+import random
 import argparse
 import runtime_switches
+import threading
 
 if __name__ == "__main__":
 
@@ -29,6 +21,7 @@ if __name__ == "__main__":
     parser.add_argument("--days", "-d", help="set number of days to simulate")
     parser.add_argument("--job_late_prob", "-j", help="probability to be late in job")
     parser.add_argument("--turn_off_optimalizations", "-t", help="turning off optimalizations", action="store_true")
+    parser.add_argument("--log", "-l", help="set log level")
 
     random.seed(14)
     meeting_kwant = 15  # ile minut ma kwant spotkania
@@ -43,6 +36,8 @@ if __name__ == "__main__":
     meeting_temp_min = 16
     meeting_temp_max = 30
     personal_wall_size = 30
+    time_speed = 600
+    time_kwant = 15
     meeting_wall_size = 30
     number_of_people = 20
     number_of_meetings = 40
@@ -50,18 +45,22 @@ if __name__ == "__main__":
     number_of_meeting_rooms = 5
     cur_date = start_date
 
+
     args = parser.parse_args()
 
     if args.people:
-        number_of_people = args.people
+        number_of_people = int(args.people)
     if args.rooms:
-        number_of_meeting_rooms = args.rooms
+        number_of_meeting_rooms = int(args.rooms)
     if args.meetings:
-        number_of_meetings = args.meetings
+        number_of_meetings = int(args.meetings)
     if args.days:
-        number_of_simulated_days = args.days
+        number_of_simulated_days = int(args.days)
     if args.job_late_prob:
-        job_late_prob = args.job_late_prob
+        job_late_prob = int(args.job_late_prob)
+    if args.log:
+        print(args.log)
+        runtime_switches.log_level = int(args.log)
     if args.turn_off_optimalizations:
         runtime_switches.is_best_room_selected_for_meeting = False
         runtime_switches.is_temerature_modulated_to_best_one = False
@@ -77,7 +76,7 @@ if __name__ == "__main__":
 
     technical = TechnicalAgent(technical_jid, "technical")
     thermometer = Thermometer(thermometer_jid, "thermometer")
-    clock = ClockAgent(clock_jid, "clock", 200, 5)
+    clock = ClockAgent(clock_jid, "clock", time_speed, time_kwant)
     central = CentralAgent(central_jid, "room")
     clock.last_date_virtual = start_date
 
@@ -136,12 +135,20 @@ if __name__ == "__main__":
     technical.start()
     thermometer.start()
 
+    processes = [None]*(number_of_people+number_of_people+number_of_meeting_rooms)
+
     for i in range(0, number_of_people):
         personal_agents[i].start()
+        # processes[i] = threading.Thread(target=personal_agents[i].start)
+        # processes[i].start()
         personal_room_agents[i].start()
+        # processes[number_of_people+i] = threading.Thread(target=personal_room_agents[i].start)
+        # processes[number_of_people+i].start()
 
     for i in range(0, number_of_meeting_rooms):
         meeting_room_agents[i].start()
+        # processes[number_of_people + number_of_people + i] = threading.Thread(target=personal_room_agents[i].start)
+        # processes[number_of_people + number_of_people + i].start()
 
     time.sleep(5)
 
@@ -168,12 +175,10 @@ if __name__ == "__main__":
                         personal_agents[i].job_late(new_date.replace(hour = random.randint(job_late_min, job_late_max)))
             cur_date = new_date
             time.sleep(2)
+        if clock.last_date_virtual >= start_date + lates_meeting_time:
+            break
         except KeyboardInterrupt:
             break
-
-    central.stop()
-    technical.stop()
-    thermometer.stop()
 
     for i in range(0, number_of_people):
         personal_agents[i].stop()
@@ -181,3 +186,11 @@ if __name__ == "__main__":
 
     for i in range(0, number_of_meeting_rooms):
         meeting_room_agents[i].stop()
+
+    central.stop()
+    technical.stop()
+    thermometer.stop()
+    clock.stop()
+
+    print("Power used till ", clock.last_date_virtual, " is ", technical.get_power())
+

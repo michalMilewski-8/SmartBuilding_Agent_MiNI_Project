@@ -208,14 +208,14 @@ class PrivateRoomAgent(Agent):
             if msg:
                 msg_data = (json.loads(msg.body))
                 if "optimal_temperature" in msg_data:
-                    if runtime_switches.log_level >= 1:
+                    if runtime_switches.log_level >= 2:
                         print("Preferred temperature: {}".format(msg_data.get("optimal_temperature")))
                     self.agent.preferred_temperatures[str(msg.sender)] = msg_data.get("optimal_temperature")
                     sum_n = 0
                     for agent_jid in self.agent.preferred_temperatures:
                         sum_n = sum_n + self.agent.preferred_temperatures[agent_jid]
                     self.agent.preferred_temperature = sum_n / len(self.agent.preferred_temperatures)
-                    if runtime_switches.log_level >= 0:
+                    if runtime_switches.log_level >= 1:
                         print("Temperature set: {}".format(self.agent.preferred_temperature))
 
     class ReceiveTemperatureAtRequestBehaviour(CyclicBehaviour):
