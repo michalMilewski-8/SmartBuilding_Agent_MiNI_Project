@@ -1,17 +1,14 @@
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
-from spade.behaviour import PeriodicBehaviour
 from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
+from datetime import datetime
+from ..energy import heat_balance, air_conditioner
 from ..sb_calendar import Calendar
 from ..time_conversion import time_to_str, str_to_time
-
 import json
 import time
-from datetime import datetime
-import sys
-from ..energy import heat_balance, air_conditioner
 import runtime_switches
 
 
@@ -107,7 +104,8 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                print(msg)
+                if runtime_switches.log_level >= 2:
+                    print(msg)
                 msg_data = json.loads(msg.body)
                 self.agent.personal_calendar.add_event(msg_data['meeting_guid'],
                                                        str_to_time(msg_data['start_date']),
@@ -121,9 +119,11 @@ class MeetingRoomAgent(Agent):
                 msg_data = json.loads(msg.body)
                 temperature = msg_data["temperature"]
                 self.agent.neighbours[str(msg.sender)]["temperature"] = temperature
-                # print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
                 msg2 = MeetingRoomAgent.prepare_room_data_inform(self.agent.temperature, str(msg.sender))
-                # print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
                 await self.send(msg2)
 
     class ReceiveRoomDataInformBehaviour(CyclicBehaviour):
@@ -132,14 +132,16 @@ class MeetingRoomAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.neighbours[str(msg.sender)]["temperature"] = msg_data["temperature"]
-                # print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
 
     class SendRoomDataExchangeRequestBehaviour(OneShotBehaviour):
         async def run(self):
             for neighbour in self.agent.neighbours:
                 if neighbour < str(self.agent.jid):
                     msg = MeetingRoomAgent.prepare_room_data_exchange_request(self.agent.temperature, neighbour)
-                    # print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
+                    if runtime_switches.log_level >= 3:
+                        print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
                     await self.send(msg)
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
@@ -150,7 +152,8 @@ class MeetingRoomAgent(Agent):
                 new_time = str_to_time(msg_data['datetime'])
                 last_time = self.agent.date
                 self.agent.date = new_time
-                # print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed = new_time - last_time
                 b = self.agent.SendEnergyUsageInformBehaviour()
                 b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
@@ -163,7 +166,8 @@ class MeetingRoomAgent(Agent):
                         self.agent.neighbours, self.agent.ac_power,
                         self.agent.outdoor_wall,
                         self.agent.outdoor_temperature)
-                    print(str(self.agent.jid) + " temp " + str(self.agent.temperature))
+                    if runtime_switches.log_level >= 1:
+                        print(str(self.agent.jid) + " temp " + str(self.agent.temperature))
                     self.agent.temperature -= temperature_lost
 
                     next_meeting_time, temperature_at_next_meeting = self.agent.personal_calendar.get_proximity_peek(
@@ -243,7 +247,8 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                # print(msg)
+                if runtime_switches.log_level >= 2:
+                    print(msg)
                 msg_data = json.loads(msg.body)
                 guid = msg_data["request_guid"]
                 self.agent.score_request_dict[guid]["temperatures"].append(msg_data["temperature"])
@@ -263,7 +268,8 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                # print(msg)
+                if runtime_switches.log_level >= 2:
+                    print(msg)
                 msg_data = json.loads(msg.body)
                 temp = self.agent.personal_calendar.get_temperature_at(str_to_time(msg_data["date"]))
                 msg2 = MeetingRoomAgent.prepare_temperature_at_inform(msg.sender, msg_data["request_guid"], temp)
@@ -277,7 +283,8 @@ class MeetingRoomAgent(Agent):
                 self.agent.outdoor_temperature = msg_data["temperature"]
 
     async def setup(self):
-        print(str(self.jid) + " Meeting room agent setup")
+        if runtime_switches.log_level >= 0:
+            print(str(self.jid) + " Meeting room agent setup")
 
         temperature_at_request_template = Template()
         temperature_at_request_template.set_metadata('performative', 'request')

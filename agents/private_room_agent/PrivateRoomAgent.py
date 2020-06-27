@@ -1,18 +1,14 @@
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
-from spade.behaviour import PeriodicBehaviour
 from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
-from spade import quit_spade
-import json
-import time
-
 from datetime import datetime
-import sys
 from ..energy import heat_balance, air_conditioner
 from ..sb_calendar import Calendar
 from ..time_conversion import time_to_str, str_to_time
+import json
+import time
 import runtime_switches
 
 
@@ -87,9 +83,11 @@ class PrivateRoomAgent(Agent):
                 msg_data = json.loads(msg.body)
                 temperature = msg_data["temperature"]
                 self.agent.neighbours[str(msg.sender)]["temperature"] = temperature
-                # print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
                 msg2 = PrivateRoomAgent.prepare_room_data_inform(self.agent.temperature, str(msg.sender))
-                # print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
                 await self.send(msg2)
 
     class ReceiveRoomDataInformBehaviour(CyclicBehaviour):
@@ -98,14 +96,16 @@ class PrivateRoomAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.neighbours[str(msg.sender)]["temperature"] = msg_data["temperature"]
-                # print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
 
     class SendRoomDataExchangeRequestBehaviour(OneShotBehaviour):
         async def run(self):
             for neighbour in self.agent.neighbours:
                 if neighbour < str(self.agent.jid):
                     msg = PrivateRoomAgent.prepare_room_data_exchange_request(self.agent.temperature, neighbour)
-                    # print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
+                    if runtime_switches.log_level >= 3:
+                        print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
                     await self.send(msg)
 
     class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
@@ -116,7 +116,8 @@ class PrivateRoomAgent(Agent):
                 new_time = str_to_time(msg_data['datetime'])
                 last_time = self.agent.date
                 self.agent.date = new_time
-                # print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
                 time_elapsed = new_time - last_time
                 b = self.agent.SendEnergyUsageInformBehaviour()
                 b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
@@ -128,7 +129,8 @@ class PrivateRoomAgent(Agent):
                         time_elapsed, self.agent.temperature, self.agent.room_capacity,
                         self.agent.neighbours, self.agent.ac_power,
                         self.agent.outdoor_wall, self.agent.outdoor_temperature)
-                    print(str(self.agent.jid) + " temp " + str(self.agent.temperature))
+                    if runtime_switches.log_level >= 1:
+                        print(str(self.agent.jid) + " temp " + str(self.agent.temperature))
                     self.agent.temperature -= temperature_lost
                     heat_needed = air_conditioner(self.agent.temperature,
                                                   self.agent.preferred_temperature, self.agent.room_capacity)
@@ -179,13 +181,15 @@ class PrivateRoomAgent(Agent):
             if msg:
                 msg_data = (json.loads(msg.body))
                 if "optimal_temperature" in msg_data:
-                    print("Preferred temperature: {}".format(msg_data.get("optimal_temperature")))
+                    if runtime_switches.log_level >= 1:
+                        print("Preferred temperature: {}".format(msg_data.get("optimal_temperature")))
                     self.agent.preferred_temperatures[str(msg.sender)] = msg_data.get("optimal_temperature")
                     sum_n = 0
                     for agent_jid in self.agent.preferred_temperatures:
                         sum_n = sum_n + self.agent.preferred_temperatures[agent_jid]
                     self.agent.preferred_temperature = sum_n / len(self.agent.preferred_temperatures)
-                    print("Temperature set: {}".format(self.agent.preferred_temperature))
+                    if runtime_switches.log_level >= 0:
+                        print("Temperature set: {}".format(self.agent.preferred_temperature))
 
     class ReceiveTemperatureAtRequestBehaviour(CyclicBehaviour):
         async def run(self):
@@ -205,7 +209,8 @@ class PrivateRoomAgent(Agent):
                 self.agent.outdoor_temperature = msg_data["temperature"]
 
     async def setup(self):
-        print(str(self.jid) + " Private room agent setup")
+        if runtime_switches.log_level >= 0:
+            print(str(self.jid) + " Private room agent setup")
 
         datetime_inform_template = Template()
         datetime_inform_template.set_metadata('performative', 'inform')

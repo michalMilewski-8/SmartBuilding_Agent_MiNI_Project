@@ -1,20 +1,10 @@
 from datetime import datetime
-
-from spade.agent import Agent
-from spade.behaviour import CyclicBehaviour
-from spade.behaviour import PeriodicBehaviour
-from spade.message import Message
-from spade.template import Template
-from spade import quit_spade
-import json
-from agents.central_agent.CentralAgent import CentralAgent
 from agents.private_room_agent.PrivateRoomAgent import PrivateRoomAgent
 from agents.personal_agent.PersonalAgent import PersonalAgent
 from agents.technical_agent.TechnicalAgent import TechnicalAgent
 from agents.thermometer_agent.Thermometer import Thermometer
 from agents.clock_agent.ClockAgent import ClockAgent
 import time
-import sys
 
 
 

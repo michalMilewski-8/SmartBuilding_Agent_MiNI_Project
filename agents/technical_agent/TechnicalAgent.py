@@ -3,6 +3,7 @@ from spade.behaviour import CyclicBehaviour, PeriodicBehaviour
 from spade.message import Message
 from spade.template import Template
 import json
+import runtime_switches
 
 
 class TechnicalAgent(Agent):
@@ -47,7 +48,8 @@ class TechnicalAgent(Agent):
                 msg_body = json.loads(msg.body)
                 if 'energy_used_since_last_message' in msg_body:
                     self.agent.add_to_power(msg_body['energy_used_since_last_message']);
-                    print("Power used so far: ", self.agent.power)
+                    if runtime_switches.log_level >= 1:
+                        print("Power used so far: ", self.agent.power)
 
     # maybe useful - not deleting
     class GetRoomPowerBehaviour(PeriodicBehaviour):

@@ -1,14 +1,12 @@
 from spade.agent import Agent
-from spade.behaviour import CyclicBehaviour, OneShotBehaviour, PeriodicBehaviour
+from spade.behaviour import CyclicBehaviour, OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
-from spade import quit_spade
-
-from ..sb_calendar import Calendar
-import json
 from datetime import datetime
+from ..sb_calendar import Calendar
 from ..time_conversion import time_to_str, str_to_time
 import runtime_switches
+import json
 
 
 class CentralAgent(Agent):
@@ -38,7 +36,8 @@ class CentralAgent(Agent):
         self.meeting_room_calendars[room_jid] = Calendar()
 
     async def setup(self):
-        print(str(self.jid) + " Central agent setup")
+        if runtime_switches.log_level >= 0:
+            print(str(self.jid) + " Central agent setup")
         self.date = datetime.now()
 
         datetime_inform_template = Template()
@@ -65,7 +64,8 @@ class CentralAgent(Agent):
         self.add_behaviour(meeting_late_behaviour, meeting_late_template)
 
     async def find_best_room(self, behav, meet_guid, start_date, end_date, temp):
-        print("find_best_room started")
+        if runtime_switches.log_level >= 3:
+            print("find_best_room started")
         for meeting_room in behav.agent.meeting_room_calendars.keys():
             score_request = Message(to=str(meeting_room))
             score_request.set_metadata("performative", "request")
@@ -116,14 +116,16 @@ class CentralAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.date = str_to_time(msg_data["datetime"])
-                print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
+                if runtime_switches.log_level >= 1:
+                    print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
 
     class MeetingBookingBehaviour(CyclicBehaviour):
         async def run(self):
             if not self.agent.processing_meeting:
                 msg = await self.receive(timeout=1)
                 if msg:
-                    print(msg)
+                    if runtime_switches.log_level >=2:
+                        print(msg)
                     msg_body = json.loads(msg.body)
                     self.agent.processing_meeting = True
                     self.agent.meetings_info[msg_body.get('meeting_guid')] = {'meeting_guid': msg_body.get('meeting_guid'),
@@ -145,12 +147,14 @@ class CentralAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                print(msg)
+                if runtime_switches.log_level >= 2:
+                    print(msg)
                 msg_body = json.loads(msg.body)
                 new_start_date = str_to_time(msg_body['arrival_datetime'])
                 guid = msg_body['meeting_guid']
                 if msg_body['force_move'] == True:
-                    print("DEBUG")
+                    if runtime_switches.log_level >=3:
+                        print("DEBUG")
                     old_start_date = self.agent.meetings_info[guid]['start_date']
                     old_end_date = self.agent.meetings_info[guid]['end_date']
                     new_end_date = old_end_date + (new_start_date - old_start_date)
@@ -172,7 +176,8 @@ class CentralAgent(Agent):
             if msg:
                 # print(msg)
                 msg_body = json.loads(msg.body)
-                print('received score: ' + str(msg_body["score"]) + ' from: ' + str(msg.sender))
+                if runtime_switches.log_level >= 1:
+                    print('received score: ' + str(msg_body["score"]) + ' from: ' + str(msg.sender))
                 self.agent.meetings_info[msg_body["meeting_guid"]]["scores"][str(msg.sender)] = msg_body["score"]
                 if len(self.agent.meetings_info[msg_body["meeting_guid"]][
                            "scores"]) == len(self.agent.meeting_room_calendars.keys()):
