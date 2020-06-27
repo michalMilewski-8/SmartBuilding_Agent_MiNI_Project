@@ -37,7 +37,7 @@ class PrivateRoomAgent(Agent):
         self.outdoor_wall = 20
         self.outdoor_temperature = self.temperature
         self.first_guy_coming_at = self.date.replace(hour=self.default_day_start, minute=0, second=0)
-        self.light_const = 1000
+        self.light_const = 10000
 
     @staticmethod
     def prepare_room_data_exchange_request(temperature, receivers):

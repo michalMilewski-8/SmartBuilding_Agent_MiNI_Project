@@ -116,11 +116,7 @@ class CentralAgent(Agent):
             if not self.agent.processing_meeting:
                 msg = await self.receive(timeout=1)
                 if msg:
-<<<<<<< HEAD
                     if runtime_switches.log_level >=4:
-=======
-                    if runtime_switches.log_level >= 2:
->>>>>>> e37b0ff3210119f4db830de938b5cdf524d194b5
                         print(msg)
                     msg_body = json.loads(msg.body)
                     self.agent.processing_meeting = True

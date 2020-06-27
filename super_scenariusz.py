@@ -175,8 +175,8 @@ if __name__ == "__main__":
                         personal_agents[i].job_late(new_date.replace(hour = random.randint(job_late_min, job_late_max)))
             cur_date = new_date
             time.sleep(2)
-        if clock.last_date_virtual >= start_date + lates_meeting_time:
-            break
+            if clock.last_date_virtual >= start_date + lates_meeting_time:
+                break
         except KeyboardInterrupt:
             break
 
