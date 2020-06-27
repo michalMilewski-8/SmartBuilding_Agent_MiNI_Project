@@ -143,9 +143,14 @@ class CentralAgent(Agent):
                 if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_body = json.loads(msg.body)
+                guid = msg_body['meeting_guid']                
+
                 new_start_date = str_to_time(msg_body['arrival_datetime'])
-                guid = msg_body['meeting_guid']
-                if msg_body['force_move'] == True:
+                old_start_date = self.agent.meetings_info[guid]['start_date']
+                old_end_date = self.agent.meetings_info[guid]['end_date']
+                new_end_date = old_end_date + (new_start_date - old_start_date)
+
+                if msg_body['force_move'] and runtime_switches.meeting_late_inform:
                     if runtime_switches.log_level >= 3:
                         print("DEBUG")
 
@@ -156,17 +161,16 @@ class CentralAgent(Agent):
                     response.to = str(self.agent.meetings_info[msg_body["meeting_guid"]]["room_id"])
                     print(response)
                     await self.send(response)
-
-                    old_start_date = self.agent.meetings_info[guid]['start_date']
-                    old_end_date = self.agent.meetings_info[guid]['end_date']
-                    new_end_date = old_end_date + (new_start_date - old_start_date)
+                    
                     self.agent.meetings_info[msg_body["meeting_guid"]]["scores"] = {}
                     self.agent.meetings_info[msg_body["meeting_guid"]]["start_date"] = new_start_date
                     self.agent.meetings_info[msg_body["meeting_guid"]]["end_date"] = new_end_date
                     await self.agent.find_best_room(self, guid, new_start_date, new_end_date,
                                                     self.agent.meetings_info[guid]['temperature'])
                 else:
-                    self.agent.meetings_info[guid]['start_date'] = new_start_date
+                    if runtime_switches.meeting_late_inform:
+                        self.agent.meetings_info[guid]['start_date'] = new_start_date
+                    self.agent.meetings_info[guid]['end_date'] = new_end_date
                     behav = self.agent.RespondForMeetingRequest()
                     behav.meeting_guid = guid
                     self.agent.add_behaviour(behav)
