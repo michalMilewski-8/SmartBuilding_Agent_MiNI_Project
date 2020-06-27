@@ -36,7 +36,7 @@ class ClockAgent(Agent):
             if runtime_switches.log_level >= 1:
                 print("Current time is ", virtual_date)
             for agent in self.agent.agents_jids:
-                if runtime_switches.log_level >= 3:
+                if runtime_switches.log_level >= 4:
                     print(str(self.agent.jid) + " sending date to " + agent)
                 msg = Message(to = agent)
                 msg.set_metadata("performative", "inform")

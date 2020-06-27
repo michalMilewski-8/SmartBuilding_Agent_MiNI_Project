@@ -28,7 +28,7 @@ class Thermometer(Agent):
         async def run(self):
             msg = await self.receive(timeout = 1)
             if(msg):
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 date_dict = json.loads(msg.body)
                 date = str_to_time(date_dict['date'])
