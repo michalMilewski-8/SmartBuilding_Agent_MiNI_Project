@@ -18,6 +18,7 @@ if __name__ == "__main__":
     parser.add_argument("--rooms", "-r", help="set number of meeting rooms")
     parser.add_argument("--meetings", "-m", help="set number of meetings to schedule")
     parser.add_argument("--days", "-d", help="set number of days to simulate")
+    parser.add_argument("--job_late_prob", "-j", help="probability to be late in job")
     parser.add_argument("--turn_off_optimalizations", "-t", help="turning off optimalizations", action="store_true")
     parser.add_argument("--log", "-l", help="set log level")
 
@@ -28,16 +29,21 @@ if __name__ == "__main__":
     start_date = datetime(2020, 1, 1, 0, 0)
     preferred_temp_private_min = 20
     preferred_temp_private_max = 26
+    job_late_min = 8
+    job_late_max = 12
+    job_late_prob = 70
     meeting_temp_min = 16
     meeting_temp_max = 30
     personal_wall_size = 30
     time_speed = 600
     time_kwant = 15
     meeting_wall_size = 30
-    number_of_people = 10
-    number_of_meetings = 80
-    number_of_simulated_days = 1
-    number_of_meeting_rooms = 10
+    number_of_people = 20
+    number_of_meetings = 40
+    number_of_simulated_days = 10
+    number_of_meeting_rooms = 5
+    cur_date = start_date
+
 
     args = parser.parse_args()
 
@@ -49,6 +55,8 @@ if __name__ == "__main__":
         number_of_meetings = int(args.meetings)
     if args.days:
         number_of_simulated_days = int(args.days)
+    if args.job_late_prob:
+        job_late_prob = int(args.job_late_prob)
     if args.log:
         print(args.log)
         runtime_switches.log_level = int(args.log)
@@ -135,7 +143,7 @@ if __name__ == "__main__":
     for i in range(0, number_of_meeting_rooms):
         meeting_room_agents[i].start()
 
-    time.sleep(1)
+    time.sleep(5)
 
     for i in range(0, number_of_people):
         personal_agents[i].set_preferred_temperature(random.randint(preferred_temp_private_min, preferred_temp_private_max))
@@ -152,8 +160,17 @@ if __name__ == "__main__":
 
     # wait until user interrupts with ctrl+C
     while True:
-        time.sleep(1)
-        if clock.last_date_virtual >= start_date + lates_meeting_time:
+        try:
+            new_date = clock.last_date_virtual
+            if new_date.day != cur_date.day:
+                for i in range(0, number_of_people):
+                    if random.random() <= job_late_prob/100:
+                        personal_agents[i].job_late(new_date.replace(hour = random.randint(job_late_min, job_late_max)))
+            cur_date = new_date
+            time.sleep(2)
+            if clock.last_date_virtual >= start_date + lates_meeting_time:
+                break
+        except KeyboardInterrupt:
             break
 
     for i in range(0, number_of_people):

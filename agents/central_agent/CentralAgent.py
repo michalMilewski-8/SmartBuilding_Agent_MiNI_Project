@@ -116,7 +116,7 @@ class CentralAgent(Agent):
             if not self.agent.processing_meeting:
                 msg = await self.receive(timeout=1)
                 if msg:
-                    if runtime_switches.log_level >= 2:
+                    if runtime_switches.log_level >=4:
                         print(msg)
                     msg_body = json.loads(msg.body)
                     self.agent.processing_meeting = True
@@ -140,7 +140,7 @@ class CentralAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_body = json.loads(msg.body)
                 new_start_date = str_to_time(msg_body['arrival_datetime'])
@@ -148,6 +148,15 @@ class CentralAgent(Agent):
                 if msg_body['force_move'] == True:
                     if runtime_switches.log_level >= 3:
                         print("DEBUG")
+
+                    response = Message()
+                    response.set_metadata('performative', 'inform')
+                    response.set_metadata('type', 'delete_meeting_inform')
+                    response.body = json.dumps({'meeting_guid': guid})
+                    response.to = str(self.agent.meetings_info[msg_body["meeting_guid"]]["room_id"])
+                    print(response)
+                    await self.send(response)
+
                     old_start_date = self.agent.meetings_info[guid]['start_date']
                     old_end_date = self.agent.meetings_info[guid]['end_date']
                     new_end_date = old_end_date + (new_start_date - old_start_date)

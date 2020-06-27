@@ -93,6 +93,10 @@ class MeetingRoomAgent(Agent):
     new_meeting_inform_template.set_metadata('performative', 'inform')
     new_meeting_inform_template.set_metadata('type', 'new_meeting_inform')
 
+    delete_meeting_inform_template = Template()
+    delete_meeting_inform_template.set_metadata('performative', 'inform')
+    delete_meeting_inform_template.set_metadata('type', 'delete_meeting_inform')
+
     outdoor_temperature_inform_template = Template()
     outdoor_temperature_inform_template.set_metadata('performative', 'inform')
     outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature_inform')
@@ -105,7 +109,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 self.agent.personal_calendar.add_event(msg_data['meeting_guid'],
@@ -257,7 +261,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 guid = msg_data["request_guid"]
@@ -278,7 +282,7 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                if runtime_switches.log_level >= 2:
+                if runtime_switches.log_level >= 4:
                     print(msg)
                 msg_data = json.loads(msg.body)
                 temp = self.agent.personal_calendar.get_temperature_at(str_to_time(msg_data["date"]))
@@ -291,6 +295,14 @@ class MeetingRoomAgent(Agent):
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.outdoor_temperature = msg_data["temperature"]
+
+    class ReceiveDeleteMeetingInformBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout=1)
+            if msg:
+                print(msg)
+                msg_data = json.loads(msg.body)
+                self.agent.personal_calendar.delete_event(msg_data['meeting_guid'])
 
     async def setup(self):
         if runtime_switches.log_level >= 0:
@@ -330,6 +342,8 @@ class MeetingRoomAgent(Agent):
         self.add_behaviour(datetimeBehaviour, datetime_inform_template)
 
         self.add_behaviour(self.ReceiveNewMeetingInformBehaviour(), self.new_meeting_inform_template)
+
+        self.add_behaviour(self.ReceiveDeleteMeetingInformBehaviour(), self.delete_meeting_inform_template)
 
         outdoor_temperature_inform_template = Template()
         outdoor_temperature_inform_template.set_metadata('performative', 'inform')
