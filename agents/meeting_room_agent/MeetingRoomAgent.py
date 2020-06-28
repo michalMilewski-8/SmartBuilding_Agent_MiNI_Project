@@ -163,7 +163,7 @@ class MeetingRoomAgent(Agent):
                 b = self.agent.SendEnergyUsageInformBehaviour()
                 if runtime_switches.add_light_and_conditioning_const:
                     if runtime_switches.optimize_lightning:
-                        if self.agent.personal_calendar.is_free(last_time, new_time):
+                        if not self.agent.personal_calendar.is_free(last_time, new_time):
                             b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
                         else:
                             b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
