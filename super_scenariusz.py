@@ -193,7 +193,7 @@ if __name__ == "__main__":
 
     for i in range(0, number_of_meetings):
         meeting_len = timedelta(minutes=meeting_kwant * random.randint(min_meeting_kwants, max_meeting_kwants))
-        hmm = timedelta(minutes=random.randint(7*60, 18*60), days=random.randint(0, lates_meeting_time.days))
+        hmm = timedelta(minutes=random.randint(7*60, 18*60), days=random.randint(0, lates_meeting_time.days - 1))
         meeting_start = start_date + hmm
         personal_agents[i % number_of_people].new_meeting_set(meeting_start, meeting_start + meeting_len,
                                                               random.randint(meeting_temp_min, meeting_temp_max), [])
