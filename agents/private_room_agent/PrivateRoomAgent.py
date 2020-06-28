@@ -146,7 +146,7 @@ class PrivateRoomAgent(Agent):
                     self.agent.temperature -= temperature_lost
                     if runtime_switches.log_level >= 1:
                         print(str(self.agent.jid) + " temp " + str(self.agent.temperature))
-                    if (len(self.agent.people) > 0 and self.agent.date.hour < self.agent.end_of_day) or not runtime_switches.private_room_optimal_heating:
+                    if (len(self.agent.people) > 0 and self.agent.date.hour < self.agent.end_of_day and self.agent.date.hour-1 >= self.agent.first_guy_coming_at.hour) or not runtime_switches.private_room_optimal_heating:
                         heat_needed = air_conditioner(self.agent.temperature,
                                                     self.agent.preferred_temperature, self.agent.room_capacity)
                     else:
