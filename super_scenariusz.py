@@ -198,8 +198,8 @@ if __name__ == "__main__":
         personal_agents[i % number_of_people].new_meeting_set(meeting_start, meeting_start + meeting_len,
                                                               random.randint(meeting_temp_min, meeting_temp_max), [])
         if random.random() <= meeting_late_prob/100:
-            if hasattr(personal_agents[i % number_of_people], 'last_guid'):
-                personal_agents[i % number_of_people].meeting_late(meeting_start + meeting_len / 2, 
+            time.sleep(1)
+            personal_agents[i % number_of_people].meeting_late(meeting_start + meeting_len / 2, 
                                                                 personal_agents[i % number_of_people].last_guid,
                                                                 True if random.random() < 0.5  else False)
 
