@@ -6,10 +6,9 @@ actor AgenciPokojówSpotkań
 actor AgentPokojuSpotkań
 
 AgentPersonalny -> AgentCentralnyPlanujący : late_inform
+AgentCentralnyPlanujący -> AgentPokojuSpotkań : delete_meeting_inform
 alt if needed
-	loop NegocjacjaTerminuSpotkania
-		AgentCentralnyPlanujący -> AgenciPersonalni : messages
-		AgenciPersonalni -> AgentCentralnyPlanujący : messages
+	loop OcenaMozliwosciPrzeprowadzeniaSpotkania
 		AgentCentralnyPlanujący -> AgenciPokojówSpotkań : messages
 		AgenciPokojówSpotkań -> AgentCentralnyPlanujący : messages
 	end
