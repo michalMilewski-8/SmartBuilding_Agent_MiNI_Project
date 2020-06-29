@@ -1,8 +1,8 @@
 import json
 import pandas as pd
+import runtime_switches
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
-from spade.message import Message
 from spade.template import Template
 from ..time_conversion import time_to_str, str_to_time
 
@@ -16,7 +16,8 @@ temp_data = pd.read_csv(
 
 class Thermometer(Agent):
     async def setup(self):
-        print("Thermometer setup")
+        if runtime_switches.log_level >= 0:
+            print("Thermometer setup")
         template = Template()
         template.set_metadata('performative', 'request')
         template.set_metadata('type', 'outdoor_temperature')
@@ -27,6 +28,8 @@ class Thermometer(Agent):
         async def run(self):
             msg = await self.receive(timeout = 1)
             if(msg):
+                if runtime_switches.log_level >= 4:
+                    print(msg)
                 date_dict = json.loads(msg.body)
                 date = str_to_time(date_dict['date'])
                 temp = self.agent.get_temperature(pd.Timestamp(date))

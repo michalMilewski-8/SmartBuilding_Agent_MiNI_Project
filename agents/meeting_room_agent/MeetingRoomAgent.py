@@ -1,17 +1,15 @@
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour
-from spade.behaviour import PeriodicBehaviour
 from spade.behaviour import OneShotBehaviour
 from spade.message import Message
 from spade.template import Template
+from datetime import datetime
+from ..energy import heat_balance, air_conditioner
 from ..sb_calendar import Calendar
 from ..time_conversion import time_to_str, str_to_time
-
 import json
 import time
-from datetime import datetime
-import sys
-from ..energy import heat_balance, air_conditioner
+import runtime_switches
 
 
 class MeetingRoomAgent(Agent):
@@ -22,7 +20,8 @@ class MeetingRoomAgent(Agent):
         self.score_request_dict = {}
         self.central = ""
         self.neighbours = {}
-        self.temperature = 20
+        self.temperature = runtime_switches.boundary_down + (
+            runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
         self.temperatures = {}
         self.date = datetime.now()
         self.ac_power = 0
@@ -32,6 +31,7 @@ class MeetingRoomAgent(Agent):
         self.outdoor_temperature = self.temperature
         self.outdoor_agent = ""
         self.energy_agent = ""
+        self.light_const = 1000
 
     @staticmethod
     def prepare_room_data_exchange_request(temperature, receivers):
@@ -56,6 +56,7 @@ class MeetingRoomAgent(Agent):
         msg.set_metadata('type', 'energy_usage_inform')
         msg.body = json.dumps({'energy_used_since_last_message': energy})
         return msg
+
     @staticmethod
     def prepare_outdoor_temperature_request(receivers, date):
         msg = Message(to=receivers)
@@ -92,6 +93,10 @@ class MeetingRoomAgent(Agent):
     new_meeting_inform_template.set_metadata('performative', 'inform')
     new_meeting_inform_template.set_metadata('type', 'new_meeting_inform')
 
+    delete_meeting_inform_template = Template()
+    delete_meeting_inform_template.set_metadata('performative', 'inform')
+    delete_meeting_inform_template.set_metadata('type', 'delete_meeting_inform')
+
     outdoor_temperature_inform_template = Template()
     outdoor_temperature_inform_template.set_metadata('performative', 'inform')
     outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature_inform')
@@ -104,7 +109,8 @@ class MeetingRoomAgent(Agent):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                print(msg)
+                if runtime_switches.log_level >= 4:
+                    print(msg)
                 msg_data = json.loads(msg.body)
                 self.agent.personal_calendar.add_event(msg_data['meeting_guid'],
                                                        str_to_time(msg_data['start_date']),
@@ -113,70 +119,95 @@ class MeetingRoomAgent(Agent):
 
     class ReceiveRoomDataExchangeRequestBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive(timeout = 1)
+            msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
                 temperature = msg_data["temperature"]
                 self.agent.neighbours[str(msg.sender)]["temperature"] = temperature
-                #print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " received exchange request from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
                 msg2 = MeetingRoomAgent.prepare_room_data_inform(self.agent.temperature, str(msg.sender))
-                #print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " sending exchange inform to " + str(msg.sender) + " with " + str(self.agent.temperature))
                 await self.send(msg2)
 
     class ReceiveRoomDataInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive(timeout = 1)
+            msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.neighbours[str(msg.sender)]["temperature"] = msg_data["temperature"]
-                #print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " received exchange inform from " + str(msg.sender) + " with " + str(self.agent.neighbours[str(msg.sender)]["temperature"]))
 
     class SendRoomDataExchangeRequestBehaviour(OneShotBehaviour):
         async def run(self):
             for neighbour in self.agent.neighbours:
                 if neighbour < str(self.agent.jid):
                     msg = MeetingRoomAgent.prepare_room_data_exchange_request(self.agent.temperature, neighbour)
-                    #print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
+                    if runtime_switches.log_level >= 3:
+                        print(str(self.agent.jid) + " sending exchange request to " + neighbour + " with " + str(self.agent.temperature))
                     await self.send(msg)
 
-class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
+    class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive(timeout = 1)
+            msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
                 new_time = str_to_time(msg_data['datetime'])
                 last_time = self.agent.date
                 self.agent.date = new_time
-                #print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
-                time_elapsed =  new_time - last_time
-                # TO DZIALA JAK COS, TRZEBA TYLKO UZUPELNIC TECHNICZNEGO (patrz implementacja behaviour lub private room)
-                # b = self.agent.SendEnergyUsageInformBehaviour()
-                # b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
-                # self.agent.add_behaviour(b)
+                if runtime_switches.log_level >= 3:
+                    print(str(self.agent.jid) + " current date: {}".format(self.agent.date))
+                time_elapsed = new_time - last_time
+                b = self.agent.SendEnergyUsageInformBehaviour()
+                if runtime_switches.add_light_and_conditioning_const:
+                    if runtime_switches.optimize_lightning:
+                        if not self.agent.personal_calendar.is_free(last_time, new_time):
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                        else:
+                            b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                    else:
+                        b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds) + self.agent.light_const)
+                else:
+                    b.set_energy(abs(self.agent.ac_power * time_elapsed.seconds))
+                self.agent.add_behaviour(b)
 
                 if time_elapsed.seconds > 0:
-                    energy_used = self.agent.ac_power * time_elapsed.seconds #tak, time_elapsed.seconds dziala tak jak chcemy
+                    energy_used = self.agent.ac_power * time_elapsed.seconds
                     heat_lost_per_second, heat_lost, temperature_lost = heat_balance(
-                    time_elapsed, self.agent.temperature, self.agent.room_capacity, 
-                    self.agent.neighbours, self.agent.ac_power)
-                    #,self.agent.outdoor_wall, self.agent.outdoor_temperature) #trzeba uzupelnic technical agent i mozna odkomentowac
-                    print(str(self.agent.jid) + " temp " +str(self.agent.temperature))
+                        time_elapsed, self.agent.temperature, self.agent.room_capacity,
+                        self.agent.neighbours, self.agent.ac_power,
+                        self.agent.outdoor_wall,
+                        self.agent.outdoor_temperature)
+                    if runtime_switches.log_level >= 1:
+                        print(str(self.agent.jid) + " temp " + str(self.agent.temperature))
                     self.agent.temperature -= temperature_lost
-                    
-                    #heat_needed = air_conditioner(self.agent.temperature, 
-                    #    self.agent.preferred_temperature, self.agent.room_capacity) #TUTAJ W MEETING ROMM ZAMIAST PREFERRED TEMP POWINNO BYC COS INNEGO
-                    
-                    #if self.agent.date < self.agent.first_guy_coming_at: #TO TEZ W MEETING ROOM WYGLADA INACZEJ
-                    #    diff = self.agent.first_guy_coming_at - self.agent.date
-                    #    self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
-                    #else:
-                    #    self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
+
+                    next_meeting_time, temperature_at_next_meeting = self.agent.personal_calendar.get_proximity_peek(
+                        self.agent.date, time_elapsed.seconds)
+                    heat_needed = 0
+                    if temperature_at_next_meeting is None:
+                        if self.agent.temperature < runtime_switches.boundary_down:
+                            heat_needed = air_conditioner(self.agent.temperature,
+                                                          runtime_switches.boundary_down, self.agent.room_capacity)
+                        elif self.agent.temperature > runtime_switches.boundary_up:
+                            heat_needed = air_conditioner(self.agent.temperature,
+                                                          runtime_switches.boundary_up, self.agent.room_capacity)
+                    else:
+                        heat_needed = air_conditioner(self.agent.temperature,
+                                                      temperature_at_next_meeting, self.agent.room_capacity)
+                    if next_meeting_time is not None and time_elapsed.seconds < (
+                            next_meeting_time - self.agent.date).seconds:
+                        diff = next_meeting_time - self.agent.date
+                        self.agent.ac_power = heat_needed / diff.seconds / self.agent.ac_performance
+                    else:
+                        self.agent.ac_power = heat_needed / time_elapsed.seconds / self.agent.ac_performance
+
                 b2 = self.agent.SendRoomDataExchangeRequestBehaviour()
                 self.agent.add_behaviour(b2)
-                # b3 = self.agent.SendOutdoorTemperatureRequestBehaviour()
-                # self.agent.add_behaviour(b3)
-
-
+                b3 = self.agent.SendOutdoorTemperatureRequestBehaviour()
+                self.agent.add_behaviour(b3)
 
     class SendEnergyUsageInformBehaviour(OneShotBehaviour):
         def __init__(self):
@@ -212,7 +243,8 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
                 date_from = str_to_time(msg_data["start_date"])
                 date_to = str_to_time(msg_data["end_date"])
                 if not self.agent.personal_calendar.is_free(date_from, date_to):
-                    await self.send(self.agent.prepare_meeting_score_inform(self.agent.central, msg_data["meeting_guid"], None))
+                    await self.send(
+                        self.agent.prepare_meeting_score_inform(self.agent.central, msg_data["meeting_guid"], None))
                 else:
                     new_score = {
                         "date_from": date_from,
@@ -229,7 +261,8 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                # print(msg)
+                if runtime_switches.log_level >= 4:
+                    print(msg)
                 msg_data = json.loads(msg.body)
                 guid = msg_data["request_guid"]
                 self.agent.score_request_dict[guid]["temperatures"].append(msg_data["temperature"])
@@ -249,7 +282,8 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
         async def run(self):
             msg = await self.receive(timeout=1)
             if msg:
-                # print(msg)
+                if runtime_switches.log_level >= 4:
+                    print(msg)
                 msg_data = json.loads(msg.body)
                 temp = self.agent.personal_calendar.get_temperature_at(str_to_time(msg_data["date"]))
                 msg2 = MeetingRoomAgent.prepare_temperature_at_inform(msg.sender, msg_data["request_guid"], temp)
@@ -257,24 +291,33 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
 
     class ReceiveOutdoorTemperatureInformBehaviour(CyclicBehaviour):
         async def run(self):
-            msg = await self.receive(timeout = 1)
+            msg = await self.receive(timeout=1)
             if msg:
                 msg_data = json.loads(msg.body)
                 self.agent.outdoor_temperature = msg_data["temperature"]
 
+    class ReceiveDeleteMeetingInformBehaviour(CyclicBehaviour):
+        async def run(self):
+            msg = await self.receive(timeout=1)
+            if msg:
+                print(msg)
+                msg_data = json.loads(msg.body)
+                self.agent.personal_calendar.delete_event(msg_data['meeting_guid'])
+
     async def setup(self):
-        print(str(self.jid) + " Meeting room agent setup")
+        if runtime_switches.log_level >= 0:
+            print(str(self.jid) + " Meeting room agent setup")
 
         temperature_at_request_template = Template()
         temperature_at_request_template.set_metadata('performative', 'request')
         temperature_at_request_template.set_metadata('type', 'temperature_at_request')
         self.add_behaviour(self.ReceiveTemperatureAtRequestBehaviour(), temperature_at_request_template)
-        
+
         temperature_at_inform_template = Template()
         temperature_at_inform_template.set_metadata('performative', 'inform')
         temperature_at_inform_template.set_metadata('type', 'temperature_at_inform')
         self.add_behaviour(self.ReceiveTemperatureAtInformBehaviour(), temperature_at_inform_template)
-        
+
         meeting_score_request_template = Template()
         meeting_score_request_template.set_metadata('performative', 'request')
         meeting_score_request_template.set_metadata('type', 'meeting_score_request')
@@ -300,11 +343,13 @@ class ReceiveDatetimeInformBehaviour(CyclicBehaviour):
 
         self.add_behaviour(self.ReceiveNewMeetingInformBehaviour(), self.new_meeting_inform_template)
 
-        # outdoor_temperature_inform_template = Template()
-        # outdoor_temperature_inform_template.set_metadata('performative', 'inform')
-        # outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature_inform')
-        # outdoor_temperature_inform_behaviour = self.ReceiveOutdoorTemperatureInformBehaviour()
-        # self.add_behaviour(outdoor_temperature_inform_behaviour, outdoor_temperature_inform_template)
+        self.add_behaviour(self.ReceiveDeleteMeetingInformBehaviour(), self.delete_meeting_inform_template)
+
+        outdoor_temperature_inform_template = Template()
+        outdoor_temperature_inform_template.set_metadata('performative', 'inform')
+        outdoor_temperature_inform_template.set_metadata('type', 'outdoor_temperature_inform')
+        outdoor_temperature_inform_behaviour = self.ReceiveOutdoorTemperatureInformBehaviour()
+        self.add_behaviour(outdoor_temperature_inform_behaviour, outdoor_temperature_inform_template)
 
 
 if __name__ == "__main__":

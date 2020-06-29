@@ -17,8 +17,10 @@ import time
 import sys
 import runtime_switches
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
+    runtime_switches.is_temerature_modulated_to_best_one = False
+    runtime_switches.is_best_room_selected_for_meeting = False
     start_date = datetime(2021, 5, 21, 9, 0)
 
     technical = TechnicalAgent("technical@localhost", "technical")
@@ -65,19 +67,18 @@ if __name__ == "__main__":
     personal2.date = start_date
 
     room1.temperature = runtime_switches.boundary_down + (
-                runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
+            runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
     room2.temperature = runtime_switches.boundary_down + (
-                runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
+            runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
     room3.temperature = runtime_switches.boundary_down + (
-                runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
+            runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
     room4.temperature = runtime_switches.boundary_down + (
-                runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
+            runtime_switches.boundary_up - runtime_switches.boundary_down) / 2
+
 
     room1.neighbours = {"room2@localhost": {"wall_size": 20, "temperature": room2.temperature}}
-    room2.neighbours = {"room1@localhost": {"wall_size": 20, "temperature": room1.temperature},
-                        "room3@localhost": {"wall_size": 30, "temperature": room3.temperature}}
-    room3.neighbours = {"room2@localhost": {"wall_size": 30, "temperature": room2.temperature},
-                        "room4@localhost": {"wall_size": 20, "temperature": room4.temperature}}
+    room2.neighbours = {"room1@localhost": {"wall_size": 20, "temperature": room1.temperature}, "room3@localhost": {"wall_size": 30, "temperature": room3.temperature}}
+    room3.neighbours = {"room2@localhost": {"wall_size": 30, "temperature": room2.temperature}, "room4@localhost": {"wall_size": 20, "temperature": room4.temperature}}
     room4.neighbours = {"room3@localhost": {"wall_size": 20, "temperature": room3.temperature}}
 
     centralny.add_meeting_room("room2@localhost")
