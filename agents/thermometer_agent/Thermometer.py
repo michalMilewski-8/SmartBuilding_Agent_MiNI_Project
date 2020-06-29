@@ -20,7 +20,7 @@ class Thermometer(Agent):
             print("Thermometer setup")
         template = Template()
         template.set_metadata('performative', 'request')
-        template.set_metadata('type', 'outdoor_temperature')
+        template.set_metadata('type', 'outdoor_temperature_request')
         b = self.SendTemperature()
         self.add_behaviour(b)
 

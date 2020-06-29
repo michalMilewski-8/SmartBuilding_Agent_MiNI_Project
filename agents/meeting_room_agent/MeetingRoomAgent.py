@@ -61,7 +61,7 @@ class MeetingRoomAgent(Agent):
     def prepare_outdoor_temperature_request(receivers, date):
         msg = Message(to=receivers)
         msg.set_metadata('performative', 'request')
-        msg.set_metadata('type', 'outdoor_temperature')
+        msg.set_metadata('type', 'outdoor_temperature_request')
         msg.body = json.dumps({'date': time_to_str(date)})
         return msg
 
