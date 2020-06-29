@@ -1,0 +1,21 @@
+@startuml
+actor AgentPersonalny
+actor AgentCentralnyPlanujący
+actor AgenciPersonalni
+actor AgenciPokojówSpotkań
+actor AgentPokojuSpotkań
+
+AgentPersonalny -> AgentCentralnyPlanujący : late_inform
+alt if needed
+	loop NegocjacjaTerminuSpotkania
+		AgentCentralnyPlanujący -> AgenciPersonalni : messages
+		AgenciPersonalni -> AgentCentralnyPlanujący : messages
+		AgentCentralnyPlanujący -> AgenciPokojówSpotkań : messages
+		AgenciPokojówSpotkań -> AgentCentralnyPlanujący : messages
+	end
+end
+AgentCentralnyPlanujący -> AgentPokojuSpotkań : new_meeting_inform
+AgentCentralnyPlanujący -> AgenciPersonalni : new_meeting_inform
+AgentCentralnyPlanujący -> AgentPersonalny : meet_inform
+
+@enduml

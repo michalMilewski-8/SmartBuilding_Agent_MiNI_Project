@@ -1,0 +1,7 @@
+@startuml
+actor AgentPokoju1_dowolny
+actor AgentPokoju2_dowolny
+
+AgentPokoju1_dowolny -> AgentPokoju2_dowolny : room_data_exchange_request
+AgentPokoju2_dowolny -> AgentPokoju1_dowolny : room_data_inform
+@enduml

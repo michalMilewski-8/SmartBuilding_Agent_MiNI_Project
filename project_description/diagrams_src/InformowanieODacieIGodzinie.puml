@@ -1,0 +1,13 @@
+@startuml
+actor AgentZegarek
+actor AgentCentralnyPlanujący
+actor AgenciPersonalni
+actor AgenciPokojówSpotkań
+actor AgenciPokojówOsobistych
+
+AgentZegarek -> AgentCentralnyPlanujący : datetime_inform
+AgentZegarek -> AgenciPersonalni : datetime_inform
+AgentZegarek -> AgenciPokojówSpotkań : datetime_inform
+AgentZegarek -> AgenciPokojówOsobistych : datetime_inform
+
+@enduml
