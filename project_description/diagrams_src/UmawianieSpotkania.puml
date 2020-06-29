@@ -7,7 +7,7 @@ actor AgenciPokojówSpotkań
 
 AgentPersonalny -> AgentCentralnyPlanujący : meet_request
 alt if needed
-	loop NegocjacjaTerminuSpotkania
+	loop OcenaMożliwościPrzeprowadzeniaSpotkania​
 		AgentCentralnyPlanujący -> AgenciPersonalniUczestnikow : messages
 		AgenciPersonalniUczestnikow -> AgentCentralnyPlanujący : messages
 		AgentCentralnyPlanujący -> AgenciPokojówSpotkań : messages
